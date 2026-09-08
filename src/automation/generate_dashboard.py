@@ -1567,9 +1567,9 @@ def generate_dashboard_html(output_path: Path):
             const roiList = (typeof INITIAL_ROI !== 'undefined' && Array.isArray(INITIAL_ROI) && INITIAL_ROI.length > 0) ? INITIAL_ROI : [];
             const candidates = roiList.length > 0 ? roiList.slice(0, 6).map((c, i) => ({{
                 name: `${{c.rank || (i + 1)}}. ${{c.display_name || c.process_label}}`,
-                score: Math.min(100, Math.round((c.roi_score || 1000) / 35.0)),
-                share: `${{c.active_time_share_pct || 0}}%`,
-                desc: `${{c.department || 'Operations'}} | ${{c.execution_count || 0}} executions (${{c.active_time_share_pct || 0}}% work time) | Payback: ${{c.payback_months ? c.payback_months + ' mo' : 'N/A'}}`
+                score: Math.min(100, Math.round(c.roi_score || 0)),
+                share: `${{c.active_time_share_pct != null ? c.active_time_share_pct.toFixed(1) : (c.time_share_pct != null ? c.time_share_pct.toFixed(1) : '0.0')}}%`,
+                desc: `${{c.department || 'Operations'}} | ${{c.execution_count || 0}} executions (${{c.active_time_share_pct != null ? c.active_time_share_pct.toFixed(1) : '0'}}% work time) | Payback: ${{c.payback_months ? c.payback_months + ' mo' : (c.financial_scenarios?.base_case?.payback_period_months ? c.financial_scenarios.base_case.payback_period_months + ' mo' : 'N/A')}}`
             }})) : [
                 {{ name: '1. Payroll Deduction & Adjustment Verification', score: 95, share: '48.6%', desc: 'Human Resources | 46 executions (48.6% work time) | Payback: 25.4 mo (Phase 1 Target)' }},
                 {{ name: '2. Leave Application & Balance Cross-Check', score: 72, share: '13.4%', desc: 'Human Resources | 31 executions (13.4% work time) | Payback: 73.1 mo (Phase 2)' }},

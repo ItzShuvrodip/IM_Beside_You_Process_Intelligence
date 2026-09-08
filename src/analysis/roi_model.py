@@ -114,13 +114,32 @@ class ROIPrioritizationModel:
             tot_sec = m.get("total_duration_seconds", 0.0)
             exec_count = m.get("execution_count", 0)
             mean_sec = m.get("mean_duration_seconds", 60.0)
+            pct_of_time = m.get("pct_of_total_time", 0.0)
             auto_rate = attr["target_automation_rate"]
             crit = attr["criticality"]
             feas = attr["feasibility"]
             risk = attr["risk_score"]
 
+            # ---------------------------------------------------------------
+            # Composite ROI Score (0-100 basis, four balanced dimensions)
+            # ---------------------------------------------------------------
+            # D1: Workload share - how much operational time does this consume? (max 40 pts)
+            #     Scaled so 50% share -> 40 pts; avoids raw-seconds volume domination.
+            volume_score = min(40.0, pct_of_time * 0.80)
+
+            # D2: Engineering feasibility (max 30 pts)
+            feas_score = feas * 30.0
+
+            # D3: Risk-inverse - lower risk processes score higher (max 20 pts)
+            risk_score_dim = (1.0 / max(0.5, risk)) * 20.0
+
+            # D4: Mean duration bonus - longer per-case tasks yield more savings per automation (max 10 pts)
+            duration_bonus = min(10.0, (mean_sec / 120.0) * 10.0)
+
+            # Combine; criticality acts as a modest multiplier (1.0-1.4 range), cap at 100
+            roi_score = min(100.0, (volume_score + feas_score + risk_score_dim + duration_bonus) * (crit ** 0.3))
+
             expected_time_saved_sec = tot_sec * auto_rate
-            roi_score = (expected_time_saved_sec * crit * feas) / max(0.5, risk)
 
             scenarios = {}
             for s_name, s_params in [
@@ -155,6 +174,7 @@ class ROIPrioritizationModel:
                     "three_year_roi_pct": round(three_yr_roi, 1)
                 }
 
+            time_share = m.get("pct_of_total_time", 0.0)
             ranked.append({
                 "rank": 0,
                 "process_label": lbl,
@@ -164,7 +184,8 @@ class ROIPrioritizationModel:
                 "total_duration_minutes": m.get("total_duration_minutes", round(tot_sec / 60.0, 2)),
                 "mean_duration_seconds": mean_sec,
                 "operators_count": m.get("operators_count", 1),
-                "time_share_pct": m.get("pct_of_total_time", 0.0),
+                "time_share_pct": time_share,
+                "active_time_share_pct": time_share,   # alias consumed by dashboard JS
                 "automation_potential_pct": int(auto_rate * 100),
                 "expected_time_saved_min": round(expected_time_saved_sec / 60.0, 1),
                 "feasibility_score": feas,
