@@ -203,6 +203,54 @@ class ProcessClassifier:
             "title_patterns": [r"受発注在庫管理システム", r"在庫調整メモ", r"在庫", r"受発注"],
             "button_patterns": [],
             "doc_patterns": [r"shinkui_keiyaku", r"shinkuitorihikisaki_touroku"]
+        },
+        # Invoice Approval (Finance)
+        {
+            "label": "invoice_approval",
+            "url_patterns": [r"/invoice", r"/ap-invoice"],
+            "title_patterns": [r"請求書", r"invoice", r"請求承認"],
+            "button_patterns": [r"btn-inv-ok", r"inv-note", r"btn-inv-cancel"],
+            "doc_patterns": [r"invoice_checklist", r"seikyusho_kitei"]
+        },
+        # Bank Reconciliation (Finance)
+        {
+            "label": "bank_reconciliation",
+            "url_patterns": [r"/bank-recon", r"/reconciliation"],
+            "title_patterns": [r"銀行勘定", r"bank.recon", r"照合", r"reconciliation"],
+            "button_patterns": [r"btn-br-ok", r"br-note"],
+            "doc_patterns": [r"ginko_kanjyo_kitei", r"m1_reference"]
+        },
+        # Payment Processing (Finance)
+        {
+            "label": "payment_processing",
+            "url_patterns": [r"/payment", r"/ap-payment"],
+            "title_patterns": [r"支払処理", r"payment", r"支払"],
+            "button_patterns": [r"btn-pay-ok", r"pay-note", r"btn-pay-cancel"],
+            "doc_patterns": []
+        },
+        # Supplier Communication (Logistics)
+        {
+            "label": "supplier_communication",
+            "url_patterns": [r"/supplier", r"/vendor"],
+            "title_patterns": [r"仕入先", r"supplier", r"vendor", r"取引先"],
+            "button_patterns": [],
+            "doc_patterns": [r"shinkuitorihikisaki_touroku"]
+        },
+        # Shipment Tracking (Logistics)
+        {
+            "label": "shipment_tracking",
+            "url_patterns": [r"/shipment", r"/tracking", r"/delivery"],
+            "title_patterns": [r"出荷追跡", r"shipment", r"tracking", r"配送"],
+            "button_patterns": [],
+            "doc_patterns": []
+        },
+        # Returns Processing (Logistics)
+        {
+            "label": "returns_processing",
+            "url_patterns": [r"/returns", r"/return-order"],
+            "title_patterns": [r"返品処理", r"returns", r"返品"],
+            "button_patterns": [],
+            "doc_patterns": []
         }
     ]
 

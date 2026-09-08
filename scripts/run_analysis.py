@@ -2,16 +2,17 @@ import sys
 import json
 from pathlib import Path
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.stdout.reconfigure(encoding='utf-8')
-sys.path.insert(0, "d:/IMBY")
+sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.analysis.workload import WorkloadAnalyzer
 from src.analysis.roi_model import ROIPrioritizationModel
 
 
 def main():
-    segments_file = Path("d:/IMBY/deliverables/segments.jsonl")
-    b_dir = Path("d:/IMBY/Datasets/dataset_b")
+    segments_file = PROJECT_ROOT / "deliverables" / "segments.jsonl"
+    b_dir = PROJECT_ROOT / "Datasets" / "dataset_b"
 
     if not segments_file.exists():
         print("Error: deliverables/segments.jsonl does not exist. Run scripts/run_segmentation.py first.")

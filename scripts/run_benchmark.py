@@ -1,8 +1,9 @@
 import sys
 from pathlib import Path
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.stdout.reconfigure(encoding='utf-8')
-sys.path.insert(0, "d:/IMBY")
+sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.ingestion.loader import SessionDataLoader
 from src.segmentation.hybrid_segmenter import HybridSegmenter, SegmentationPipeline
@@ -10,7 +11,7 @@ from src.evaluation.evaluator import SegmentationEvaluator
 
 
 def main():
-    a_dir = Path("d:/IMBY/Datasets/dataset_a")
+    a_dir = PROJECT_ROOT / "Datasets" / "dataset_a"
     sessions = sorted([d for d in a_dir.iterdir() if d.is_dir()])
     print(f"Benchmarking Segmentation Pipeline on Dataset A ({len(sessions)} sessions)...")
 

@@ -14,7 +14,7 @@ class AuditLogger:
     and human supervisor overrides.
     """
     def __init__(self, log_path: Optional[Path] = None):
-        self.log_path = Path(log_path) if log_path else (Path("d:/IMBY/deliverables/audit_trail.jsonl"))
+        self.log_path = Path(log_path) if log_path else (Path(__file__).resolve().parent.parent.parent / "deliverables" / "audit_trail.jsonl")
         self.records: List[Dict[str, Any]] = []
 
     def log_evaluation(
@@ -54,14 +54,22 @@ class AuditLogger:
     ) -> Optional[Dict[str, Any]]:
         for rec in reversed(self.records):
             if rec["case_id"] == case_id:
-                rec["supervisor_override"] = {
+                override_data = {
                     "overridden_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
                     "reviewer_id": reviewer_id,
                     "original_status": original_status,
                     "override_decision": override_decision,
                     "justification": reason
                 }
-                self._append_to_disk(rec)
+                rec["supervisor_override"] = override_data
+                # Write only the override delta — avoids duplicating the full record in the JSONL log
+                delta = {
+                    "audit_id": rec["audit_id"],
+                    "case_id": case_id,
+                    "record_type": "SUPERVISOR_OVERRIDE",
+                    "supervisor_override": override_data
+                }
+                self._append_to_disk(delta)
                 return rec
         return None
 
