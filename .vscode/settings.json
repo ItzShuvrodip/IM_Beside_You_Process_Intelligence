@@ -1,0 +1,9 @@
+{
+    "python.defaultInterpreterPath": "C:\\Users\\Sentinel\\miniconda3\\envs\\nlp\\python.exe",
+    "python.condaPath": "C:\\Users\\Sentinel\\miniconda3\\Scripts\\conda.exe",
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}",
+        "${workspaceFolder}/src"
+    ],
+    "python.terminal.activateEnvironment": true
+}
