@@ -1,0 +1,8 @@
+{
+  "venvPath": "C:\\Users\\Sentinel\\miniconda3\\envs",
+  "venv": "nlp",
+  "extraPaths": [
+    ".",
+    "src"
+  ]
+}

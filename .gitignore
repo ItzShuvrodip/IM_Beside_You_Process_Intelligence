@@ -1,0 +1,16 @@
+# Ignore large raw datasets and binary screenshot assets
+Datasets/dataset_a/
+Datasets/dataset_b/
+
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+
+# Temporary files and logs
+*.log
+scratch/
+.system_generated/
