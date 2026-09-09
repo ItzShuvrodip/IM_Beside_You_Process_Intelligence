@@ -19,14 +19,14 @@ def main():
     url = f"http://{host}:{port}/"
 
     print("=" * 76)
-    print(" ⚡ ORBITAL AUTOMATION ENGINE — ENTERPRISE PLATFORM")
+    print(" PROCESS INTELLIGENCE PLATFORM — ENTERPRISE API SERVICE")
     print("=" * 76)
-    print(f" [✓] Interactive Dashboard:  {url}")
-    print(f" [✓] Interactive API Docs:   {url}docs")
-    print(f" [✓] System Overview:        {url}api/overview")
-    print(f" [✓] Process Mining DFG:     {url}api/mining/dfg")
-    print(f" [✓] Hardware Telemetry:     {url}api/hardware")
-    print(f" [✓] ERP CSV Export:         {url}api/export_erp_csv")
+    print(f" [OK] Interactive Dashboard:  {url}")
+    print(f" [OK] Interactive API Docs:   {url}docs")
+    print(f" [OK] System Overview:        {url}api/overview")
+    print(f" [OK] Process Mining DFG:     {url}api/mining/dfg")
+    print(f" [OK] Hardware Telemetry:     {url}api/hardware")
+    print(f" [OK] ERP CSV Export:         {url}api/export_erp_csv")
     print("=" * 76)
     print(" Starting Uvicorn ASGI Server... (Press CTRL+C to terminate)\n")
 

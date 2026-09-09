@@ -425,13 +425,28 @@ def serve_ui():
     """Serves the standalone enterprise web application."""
     index_path = FRONTEND_DIR / "index.html"
     if not index_path.exists():
-        return HTMLResponse("<h3>Payroll Automation UI Building... Please wait.</h3>")
-    with open(index_path, "r", encoding="utf-8") as f:
-        return HTMLResponse(
-            content=f.read(),
-            headers={"Cache-Control": "no-cache, no-store, must-revalidate"}
-        )
+        return HTMLResponse("<h3>Payroll Automation UI Loading...</h3>")
+    return HTMLResponse(
+        content=index_path.read_text(encoding="utf-8"),
+        headers={"Cache-Control": "no-cache, no-store, must-revalidate"}
+    )
 
-# Mount static files (CSS, JS)
+@app.get("/styles.css")
+def serve_styles():
+    """Serves application CSS with correct content-type header."""
+    css_path = FRONTEND_DIR / "styles.css"
+    if css_path.exists():
+        return Response(content=css_path.read_text(encoding="utf-8"), media_type="text/css")
+    return Response(status_code=404)
+
+@app.get("/app.js")
+def serve_script():
+    """Serves application JavaScript with correct content-type header."""
+    js_path = FRONTEND_DIR / "app.js"
+    if js_path.exists():
+        return Response(content=js_path.read_text(encoding="utf-8"), media_type="application/javascript")
+    return Response(status_code=404)
+
+# Mount static files (CSS, JS, assets)
 if FRONTEND_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
