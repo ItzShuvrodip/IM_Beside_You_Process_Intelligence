@@ -42,7 +42,7 @@ class PayrollDecisionService:
             self.stats["rejected"] += 1
 
         audit_trail = calc_details.get("audit_trail", [])
-        policy_ver = calc_details.get("policy_version", POLICY_METADATA["policy_version"])
+        policy_ver = str(calc_details.get("policy_version") or POLICY_METADATA["policy_version"])
 
         # Log decision into immutable audit system
         audit_record = self.audit_logger.log_evaluation(

@@ -1,3 +1,11 @@
+import sys
+from pathlib import Path
+
+# Add project root to sys.path
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 import unittest
 from src.analysis.roi_model import rank_automation_opportunities, calculate_process_metrics
 from src.analysis.process_mining import DirectlyFollowsGraphMiner

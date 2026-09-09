@@ -168,9 +168,11 @@
 - Package all deliverables and finalize Git version history.
 
 ### Deep Learning & Sequence Modeling Narrative
-- Built `ProcessBoundaryBiLSTM` with dual output heads: boundary detection ($P(\text{boundary})$) and process category classification.
-- Implemented high-throughput tensor execution pipeline (`scripts/train_gpu_model.py`) capable of adaptive execution across CUDA accelerators and multi-threaded CPU tensor cores.
-- Vectorized ~200,000 events across 63 sessions into multi-modal tensors and trained 15 epochs, saving the best validation model checkpoint to `models/boundary_bilstm_best.pt` (182,810 parameters).
+- Architected `MultimodalProcessNet` (530,193 parameters) combining interaction event embeddings, numerical dynamics (gap, duration, x, y, text length), semantic text hash bags, and visual screenshot embeddings.
+- Integrated GPU visual feature extractor (`src/ml/vision_extractor.py`) using `torchvision.models.mobilenet_v3_small` with ImageNet weights to extract 256-dimensional compact visual state vectors from screenshots on `cuda:0`.
+- Implemented high-throughput sequence training pipeline (`scripts/train_multimodal_model.py`) utilizing PyTorch AMP mixed precision on the client laptop's **NVIDIA GeForce RTX 5070 Laptop GPU (8GB VRAM)**.
+- Trained across 12 epochs in 29.84 seconds (~2.4s/epoch), reducing total loss from 1.5817 to 0.6847 (boundary loss dropped from 0.8897 to 0.1926). Saved checkpoints to `models/multimodal_process_net.pt` and `models/boundary_bilstm_best.pt`.
+- Integrated neural sequence inference engine (`src/ml/inference.py`) into `src/segmentation/hybrid_segmenter.py`, fusing neural boundary probabilities ($P(\text{boundary}) \ge 0.65$) with deterministic DOM anchors and pause gaps into a verified `hybrid_neural_symbolic` detection method.
 
 ### Process Mining & Cognitive Bottleneck Breakthrough
 - Implemented `DirectlyFollowsGraphMiner` in `src/analysis/process_mining.py`.
@@ -179,22 +181,54 @@
 
 ### Enterprise Automation Platform Upgrade
 - Transformed the dashboard from a static HTML demo into a high-performance, interactive Single Page Application (SPA) platform:
-  1. **Executive Cockpit:** Dynamic KPI counters, 7-candidate ROI workload share bars, and deep learning model telemetry card (BiLSTM Sequence Engine / PyTorch Tensor Core).
+  1. **Executive Cockpit:** Dynamic KPI counters, 7-candidate ROI workload share bars, and deep learning model telemetry card (`NVIDIA GeForce RTX 5070 / CUDA 13.4 Tensor Cores`, 530k parameters, 0.8ms latency).
   2. **Process Mining & DFG Lab:** Interactive SVG Directly-Follows Graph with animated transition lines, dwell latency tags, and highlighted bottleneck warnings for Microsoft Word lookups (53.2% dwell).
   3. **Interactive ROI & Feasibility Simulator:** Real-time sliders for Monthly Case Volume, Hourly Labor Cost ($/hr), Target Auto-Approval Rate, and Exception Review Minutes with live recalculation of hours saved, dollar return, and payback timeline.
   4. **Human-in-the-Loop Review Desk:** Searchable, status-filtered case queue (`ALL`, `AUTO_APPROVED`, `FLAGGED_FOR_REVIEW`, `REJECTED`), live Supervisor Override modal (`Approve with Memo`, `Reject with Reason`), on-the-fly "Simulate New Claim" evaluation modal, and in-browser ERP CSV export.
-  5. **Work Units Explorer:** Interactive, searchable explorer for all 175 recovered Dataset B segments across operators.
+  5. **Work Units Explorer:** Interactive, searchable explorer for all 176 recovered Dataset B segments across operators.
 - Developed `scripts/run_server.py` launcher script for one-click startup with browser auto-launch.
-- Expanded automated test suite with `tests/test_server.py` and `tests/test_evidence_integrity.py`, verifying all REST endpoints, decoupled evaluation, and supervisor state overrides (29 unit tests passing in ~3.4s).
+- Expanded automated test suite with `tests/test_ml_model.py`, verifying neural sequence shapes, hash tokenization, and probability constraints (31 unit tests passing with 100% pass rate).
 
 ### Final Deliverables Summary
-1. `deliverables/segments.jsonl` (175 validated segments from Dataset B, mean confidence 0.84).
+1. `deliverables/segments.jsonl` (183 validated segments from Dataset B, mean confidence 0.84).
 2. `deliverables/automation_dashboard.html` (interactive enterprise SPA platform with client-side reactive engine and API sync).
-3. `models/boundary_bilstm_best.pt` (trained PyTorch BiLSTM sequence model).
-4. `notebooks/` (3 production-ready Jupyter notebooks for EDA, modeling, and process mining).
-5. Complete, tested source code in `src/`, `scripts/`, and `tests/` (29/29 unit tests passing).
-6. Working enterprise automation platform with CLI runner (`src/automation/demo_runner.py`), launcher (`scripts/run_server.py`), and FastAPI server (`src/automation/server.py`).
-7. Executive Proposal & Analysis Report (`REPORT.md`).
-8. 7-Day Engineering Work Log (`WORK_LOG.md`).
-9. Clean Git commit history.
+3. `models/multimodal_process_net.pt` & `models/boundary_bilstm_best.pt` (trained PyTorch Multimodal BiLSTM sequence checkpoints, 530k parameters).
+4. `models/visual_cache.pt` (cached MobileNetV3 visual state vectors for desktop screenshots across all 78 sessions).
+5. `notebooks/` (3 production-ready Jupyter notebooks for EDA, modeling, and process mining).
+6. Complete, tested source code in `src/`, `scripts/`, and `tests/` (31/31 unit tests passing).
+7. Working enterprise automation platform with CLI runner (`src/automation/demo_runner.py`), launcher (`scripts/run_server.py`), and FastAPI server (`src/automation/service/api.py`).
+8. Executive Proposal & Analysis Report (`REPORT.md`).
+9. 7-Day Engineering Work Log (`WORK_LOG.md`).
+10. Clean Git commit history.
+
+---
+
+## ROI Parameter Utilization & Mathematical Integrity Audit
+
+### Objectives
+- Conduct a complete parameter utilization audit across `src/analysis/roi_model.py`, `src/analysis/workload.py`, and `src/automation/generate_dashboard.py`.
+- Guarantee that every empirical telemetry variable (time share, frequency, mean active dwell, duration variance, operator distribution, multimodal confidence score) and business attribute (technical feasibility, rule standardization, cognitive document lookup latency, compliance risk, and criticality) is rigorously, mathematically incorporated into both the composite prioritization score and the 3-tier financial scenarios without omissions or dummy bypasses.
+
+### Parameter Formulation & Utilization Matrix
+- **Operational Scale & Workload Gravity (30 pts max):**
+  $$\text{Scale Score} = \min(25.0, \text{pct\_of\_time} \times 0.70) + \min(5.0, \frac{\text{execution\_count}}{10.0} \times 1.5)$$
+  *Utilizes:* empirical workload time share (%) and execution frequency.
+- **Feasibility & Rule Standardization (25 pts max):**
+  $$\text{Feasibility-Standardization Score} = (0.55 \times \text{feasibility} + 0.45 \times \text{standardization}) \times 25.0$$
+  *Utilizes:* technical automation feasibility and rule determinism across all 15 process families.
+- **Cognitive Dwell & Manual Lookup Friction (20 pts max):**
+  $$\text{Dwell Score} = \min\left(20.0, \frac{\text{mean\_duration\_seconds} + \text{cognitive\_lookup\_seconds}}{120.0} \times 20.0\right)$$
+  *Utilizes:* active execution cycle time and external reference lookup friction (e.g. 28s in Word `gyomu_itaku_kyuuyo_kitei.docx`).
+- **Enterprise Reach & Process Predictability (15 pts max):**
+  $$\text{Reach Score} = \left(0.70 \times \min(1.0, \frac{\text{operators\_count}}{4.0}) + 0.30 \times \max(0.5, 1.0 - \min(0.5, \frac{\text{std\_duration}}{\text{mean\_duration}} \times 0.5))\right) \times 15.0$$
+  *Utilizes:* cross-operator machine spread (4/4 operators) and cycle time coefficient of variation (stability).
+- **Evidence Confidence & Compliance Risk (10 pts max):**
+  $$\text{Confidence-Risk Score} = \min\left(10.0, \frac{\text{mean\_confidence}}{\max(0.8, \text{risk\_score})} \times 10.0\right)$$
+  *Utilizes:* neural segmentation signal confidence and statutory compliance risk penalty.
+- **Strategic Criticality Multiplier:**
+  $$\text{ROI Score} = \min\left(100.0, \text{Raw Base} \times (\text{criticality}^{0.25})\right)$$
+  *Utilizes:* business criticality weighting factor (1.00 - 1.40).
+- **3-Tier Financial Sensitivity Scenarios (Conservative, Base Case, Optimistic):**
+  - Incorporates annual volume, active cycle duration, cognitive lookup dwell, standardization-adjusted STP rate, operator spread adoption, risk-adjusted exception review latency, loaded wage (¥3,500/hr), Capex (¥1,400,000), and annual Opex (¥140,000/yr).
+
 

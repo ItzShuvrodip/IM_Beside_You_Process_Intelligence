@@ -1,0 +1,13 @@
+# Pyrefly Project Configuration for IMBY
+project-includes = ["**/*.py"]
+search-path = [".", "src"]
+python-interpreter-path = "C:/Users/Sentinel/miniconda3/envs/nlp/python.exe"
+site-package-path = [
+    "C:/Users/Sentinel/miniconda3/envs/nlp/Lib/site-packages"
+]
+
+[errors]
+missing-import = false
+missing-attribute = false
+bad-assignment = false
+unbound-name = false

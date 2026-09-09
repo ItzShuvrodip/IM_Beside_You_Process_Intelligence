@@ -1,10 +1,16 @@
 import logging
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Union
 from datetime import datetime
 from src.ingestion.models import RawEvent, Segment, format_iso_utc
 from src.ingestion.loader import SessionDataLoader
 from src.segmentation.classifier import ProcessClassifier, is_noise_event
+
+try:
+    from src.ml.inference import MultimodalInferenceEngine
+    HAS_TORCH_ML = True
+except Exception:
+    HAS_TORCH_ML = False
 
 logger = logging.getLogger(__name__)
 
@@ -26,32 +32,55 @@ def is_auxiliary_app(app_name: Optional[str]) -> bool:
 
 class HybridSegmenter:
     """
-    Production Hybrid Segmenter with Signal Confidence Scoring.
+    Production Hybrid Segmenter with Signal Confidence Scoring & Neural Boundary Fusion.
     Consolidates DOM button anchors, active browser URL propagation,
-    document context, and inactivity gaps into verified work units.
+    document context, deep neural sequence probabilities, and inactivity gaps into verified work units.
     """
     def __init__(
         self,
         dwell_gap_seconds: float = 24.0,
         min_segment_seconds: float = 6.0,
         min_segment_events: int = 3,
-        merge_gap_seconds: float = 6.0
+        merge_gap_seconds: float = 6.0,
+        neural_checkpoint: Optional[Union[str, Path]] = None,
+        neural_boundary_threshold: float = 0.65
     ):
         self.dwell_gap_seconds = dwell_gap_seconds
         self.min_segment_seconds = min_segment_seconds
         self.min_segment_events = min_segment_events
         self.merge_gap_seconds = merge_gap_seconds
         self.classifier = ProcessClassifier()
+        self.neural_boundary_threshold = neural_boundary_threshold
+        self.neural_engine: Optional[MultimodalInferenceEngine] = None
+
+        if neural_checkpoint is not None and HAS_TORCH_ML:
+            ckpt_p = Path(neural_checkpoint)
+            if ckpt_p.exists():
+                try:
+                    self.neural_engine = MultimodalInferenceEngine(ckpt_p)
+                    logger.info(f"Loaded neural multimodal inference engine from {ckpt_p}")
+                except Exception as e:
+                    logger.warning(f"Failed to load neural checkpoint {ckpt_p}: {e}")
 
     def segment_session(self, session_id: str, events: List[RawEvent]) -> List[Segment]:
         if not events:
             return []
 
+        # Optional GPU neural boundary likelihood scoring
+        neural_boundary_probs: List[float] = []
+        if self.neural_engine:
+            try:
+                pred = self.neural_engine.predict_events(events)
+                neural_boundary_probs = pred.get("boundary_probs", [])
+            except Exception as e:
+                logger.debug(f"Neural inference bypassed: {e}")
+
         raw_segments: List[Segment] = []
         current_cluster: List[RawEvent] = []
         current_label: Optional[str] = None
+        cluster_has_neural_trigger: bool = False
 
-        def flush_cluster(cluster: List[RawEvent]):
+        def flush_cluster(cluster: List[RawEvent], had_neural_trigger: bool):
             if not cluster or len(cluster) < self.min_segment_events:
                 return
             t_start = cluster[0].datetime_utc
@@ -60,7 +89,15 @@ class HybridSegmenter:
             if duration < self.min_segment_seconds:
                 return
 
-            label, confidence, method, evidence = self.classifier.classify_segment_events(cluster)
+            res = self.classifier.classify_segment_events(cluster)
+            label = str(getattr(res, "label", res))
+            confidence: float = float(getattr(res, "confidence", 0.80))
+            method = str(getattr(res, "detection_method", "hybrid_heuristic"))
+            evidence = list(getattr(res, "evidence", []))
+
+            if had_neural_trigger and method != "unclassified_fallback":
+                confidence = min(0.98, round(confidence + 0.04, 2))
+                method = "hybrid_neural_symbolic"
 
             raw_segments.append(Segment(
                 session_id=session_id,
@@ -72,7 +109,7 @@ class HybridSegmenter:
                 evidence=evidence
             ))
 
-        for ev in events:
+        for i, ev in enumerate(events):
             if is_noise_event(ev):
                 if current_cluster:
                     current_cluster.append(ev)
@@ -103,17 +140,28 @@ class HybridSegmenter:
             if ev_label is not None and current_label is not None and ev_label != current_label and not is_aux:
                 is_process_shift = True
 
-            if is_gap or is_process_shift:
-                flush_cluster(current_cluster)
+            # Trigger 3: Neural Boundary Trigger
+            is_neural_boundary = False
+            if (
+                neural_boundary_probs
+                and i < len(neural_boundary_probs)
+                and neural_boundary_probs[i] >= self.neural_boundary_threshold
+                and not is_aux
+            ):
+                is_neural_boundary = True
+
+            if is_gap or is_process_shift or is_neural_boundary:
+                flush_cluster(current_cluster, cluster_has_neural_trigger)
                 current_cluster = [ev]
                 current_label = ev_label or (None if is_process_shift else current_label)
+                cluster_has_neural_trigger = is_neural_boundary
             else:
                 current_cluster.append(ev)
                 if ev_label and not current_label:
                     current_label = ev_label
 
         if current_cluster:
-            flush_cluster(current_cluster)
+            flush_cluster(current_cluster, cluster_has_neural_trigger)
 
         # Merge adjacent segments with identical label if separated by small gap
         merged: List[Segment] = []

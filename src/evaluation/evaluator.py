@@ -60,6 +60,8 @@ class SegmentationEvaluator:
             p_start, p_end = pred.start_dt, pred.end_dt
             for g_idx, gt in enumerate(valid_gt):
                 g_start, g_end = gt.start_dt, gt.end_dt
+                if g_end is None:
+                    continue
                 iou = compute_iou(p_start, p_end, g_start, g_end)
                 if iou >= self.min_iou:
                     candidate_pairs.append((iou, p_idx, g_idx))

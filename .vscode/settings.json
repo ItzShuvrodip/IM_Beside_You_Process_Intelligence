@@ -3,7 +3,9 @@
     "python.condaPath": "C:\\Users\\Sentinel\\miniconda3\\Scripts\\conda.exe",
     "python.analysis.extraPaths": [
         "${workspaceFolder}",
-        "${workspaceFolder}/src"
+        "${workspaceFolder}/src",
+        "C:\\Users\\Sentinel\\miniconda3\\envs\\nlp\\Lib\\site-packages"
     ],
-    "python.terminal.activateEnvironment": true
+    "python.terminal.activateEnvironment": true,
+    "python.pyrefly.configPath": "${workspaceFolder}/pyrefly.toml"
 }

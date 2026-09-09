@@ -14,3 +14,7 @@ __pycache__/
 *.log
 scratch/
 .system_generated/
+*.egg-info/
+build/
+dist/
+.venv/

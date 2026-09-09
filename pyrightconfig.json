@@ -1,8 +1,10 @@
 {
+  "pythonPath": "C:\\Users\\Sentinel\\miniconda3\\envs\\nlp\\python.exe",
   "venvPath": "C:\\Users\\Sentinel\\miniconda3\\envs",
   "venv": "nlp",
   "extraPaths": [
     ".",
-    "src"
+    "src",
+    "C:\\Users\\Sentinel\\miniconda3\\envs\\nlp\\Lib\\site-packages"
   ]
 }

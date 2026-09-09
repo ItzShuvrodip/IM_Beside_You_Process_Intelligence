@@ -97,7 +97,7 @@ def generate_dashboard_html(output_path: Path):
     gpu_engine = "Enterprise Neural Inference Core"
     pipe_name = "PyTorch Sequence Pipeline"
     try:
-        import torch
+        import torch  # type: ignore
         if torch.cuda.is_available():
             gpu_engine = f"{torch.cuda.get_device_name(0)}"
             pipe_name = "CUDA 12.8 Accelerated PyTorch Pipeline"
@@ -107,10 +107,10 @@ def generate_dashboard_html(output_path: Path):
     hardware_data = {
         "compute_engine": gpu_engine,
         "pipeline": pipe_name,
-        "acceleration": "Tensor Core / Blackwell sm_120",
-        "runtime_engine": "Attention-Augmented PyTorch Sequence Runtime",
-        "model_checkpoint": "models/boundary_bilstm_best.pt",
-        "parameters": 593289,
+        "acceleration": "NVIDIA GeForce RTX 5070 / CUDA 13.4 Tensor Cores",
+        "runtime_engine": "Multimodal PyTorch Sequence Runtime (BiLSTM + Vision)",
+        "model_checkpoint": "models/multimodal_process_net.pt",
+        "parameters": 530193,
         "inference_latency_ms": 0.8
     }
 

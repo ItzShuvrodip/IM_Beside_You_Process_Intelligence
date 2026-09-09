@@ -2,7 +2,8 @@ import sys
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-sys.stdout.reconfigure(encoding='utf-8')
+if hasattr(sys.stdout, "reconfigure"):
+    getattr(sys.stdout, "reconfigure")(encoding="utf-8")
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.ingestion.loader import SessionDataLoader
@@ -11,14 +12,26 @@ from src.evaluation.evaluator import SegmentationEvaluator
 
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="Benchmark Segmentation Pipeline on Dataset A")
+    parser.add_argument("--use-neural", action="store_true", help="Enable trained multimodal neural boundary model")
+    args = parser.parse_args()
+
     a_dir = PROJECT_ROOT / "Datasets" / "dataset_a"
     sessions = sorted([d for d in a_dir.iterdir() if d.is_dir()])
     print(f"Benchmarking Segmentation Pipeline on Dataset A ({len(sessions)} sessions)...")
 
+    model_path = (PROJECT_ROOT / "models" / "multimodal_process_net.pt") if args.use_neural else None
+    if args.use_neural and model_path and model_path.exists():
+        print(f"Neural Multimodal Acceleration: ENABLED ({model_path.name})")
+    else:
+        print("Neural Multimodal Acceleration: OFF (Baseline Multi-Signal)")
+
     pipeline = SegmentationPipeline(
         dwell_gap_seconds=20.0,
         min_segment_seconds=3.0,
-        min_segment_events=3
+        min_segment_events=3,
+        neural_checkpoint=model_path if (model_path and model_path.exists()) else None
     )
     evaluator = SegmentationEvaluator(tolerance_seconds=10.0)
 

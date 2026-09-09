@@ -1,6 +1,14 @@
 import re
-from typing import Optional, List, Dict, Tuple, Any
+from typing import Optional, List, Dict, Tuple, Any, TypedDict
 from src.ingestion.models import RawEvent
+
+
+class ProcessRule(TypedDict):
+    label: str
+    url_patterns: List[str]
+    title_patterns: List[str]
+    button_patterns: List[str]
+    doc_patterns: List[str]
 
 
 # Known transient noise application patterns
@@ -104,28 +112,61 @@ def canonicalize_label(name_or_code: str) -> str:
     return name_or_code
 
 
-class ClassificationResult(str):
+class ClassificationResult:
     """
-    Subclasses str so that `result == 'unknown_or_unclassified'` evaluates to True,
-    while supporting tuple unpacking: `label, conf, method, ev = result`.
+    Classification result supporting:
+    - Direct equality with str: `result == 'unknown_or_unclassified'`
+    - String conversion: `str(result)`
+    - Attribute access: `result.label`, `result.confidence`, etc.
+    - Tuple unpacking: `label, conf, method, ev = result`
+    - Indexing: `result[0]`, `result[1]`, etc.
     """
-    def __new__(cls, label: str, confidence: float = 0.20, method: str = "unclassified_gap", evidence: Optional[List[str]] = None):
-        obj = str.__new__(cls, label)
-        obj.label = label
-        obj.confidence = confidence
-        obj.detection_method = method
-        obj.evidence = evidence or []
-        return obj
+    label: str
+    confidence: float
+    detection_method: str
+    evidence: List[str]
+
+    def __init__(
+        self,
+        label: str,
+        confidence: float = 0.20,
+        method: str = "unclassified_gap",
+        evidence: Optional[List[str]] = None,
+    ):
+        self.label = label
+        self.confidence = confidence
+        self.detection_method = method
+        self.evidence = evidence or []
 
     def __iter__(self):
-        return iter((str(self), self.confidence, self.detection_method, self.evidence))
+        return iter((self.label, self.confidence, self.detection_method, self.evidence))
 
     def __getitem__(self, index):
-        tup = (str(self), self.confidence, self.detection_method, self.evidence)
-        return tup[index]
+        return (self.label, self.confidence, self.detection_method, self.evidence)[index]
 
     def __len__(self):
         return 4
+
+    def __str__(self) -> str:
+        return self.label
+
+    def __repr__(self) -> str:
+        return (
+            f"ClassificationResult(label={self.label!r}, confidence={self.confidence}, "
+            f"method={self.detection_method!r}, evidence={self.evidence!r})"
+        )
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, str):
+            return self.label == other
+        if isinstance(other, ClassificationResult):
+            return (self.label, self.confidence, self.detection_method, self.evidence) == (
+                other.label, other.confidence, other.detection_method, other.evidence
+            )
+        return False
+
+    def __hash__(self) -> int:
+        return hash(self.label)
 
 
 class ProcessClassifier:
@@ -139,7 +180,7 @@ class ProcessClassifier:
     Fallback -> unknown_or_unclassified (Confidence: 0.20)
     """
 
-    LABEL_RULES = [
+    LABEL_RULES: List[ProcessRule] = [
         # Payroll Items & Deductions
         {
             "label": "payroll_deduction_adjustment",

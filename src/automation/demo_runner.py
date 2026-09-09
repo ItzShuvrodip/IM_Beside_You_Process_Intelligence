@@ -2,7 +2,8 @@ import sys
 import json
 from pathlib import Path
 
-sys.stdout.reconfigure(encoding='utf-8')
+if hasattr(sys.stdout, "reconfigure"):
+    getattr(sys.stdout, "reconfigure")(encoding="utf-8")
 sys.path.insert(0, "d:/IMBY")
 
 from src.automation.service.decision_service import PayrollDecisionService as PayrollAdjustmentAutomationEngine

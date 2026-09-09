@@ -112,7 +112,7 @@ class ProcessMiningEngine:
 
                 node_frequencies[activity] += 1
 
-                if prev_activity is not None and prev_activity != activity:
+                if prev_activity is not None and prev_activity != activity and prev_time is not None:
                     edge = (prev_activity, activity)
                     transitions[edge] += 1
                     latency = max(0.1, (curr_time - prev_time).total_seconds())
@@ -218,7 +218,7 @@ class ProcessMiningEngine:
         bottlenecks.sort(key=lambda x: x["total_time_seconds"], reverse=True)
         return {"bottlenecks": bottlenecks}
 
-    def mine_dataset(self, dataset_path: Path = None, segments: List[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def mine_dataset(self, dataset_path: Optional[Path] = None, segments: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
         """
         Extracts process-level DFG metrics and application dwell times for segmented processes.
         Explicitly separates overall dataset dwell from process-attributed segment dwell.

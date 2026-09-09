@@ -3,7 +3,8 @@ import json
 from pathlib import Path
 from datetime import datetime
 
-sys.stdout.reconfigure(encoding='utf-8')
+if hasattr(sys.stdout, "reconfigure"):
+    getattr(sys.stdout, "reconfigure")(encoding="utf-8")
 sys.path.insert(0, "d:/IMBY")
 
 from src.segmentation.hybrid_segmenter import HybridSegmenter
@@ -15,12 +16,13 @@ def main():
     deliverables_dir.mkdir(parents=True, exist_ok=True)
     out_file = deliverables_dir / "segments.jsonl"
 
-    print("Running Production Hybrid Segmentation on Dataset B...")
+    model_path = Path("d:/IMBY/models/multimodal_process_net.pt")
     segmenter = HybridSegmenter(
         dwell_gap_seconds=24.0,
         min_segment_seconds=6.0,
         min_segment_events=3,
-        merge_gap_seconds=6.0
+        merge_gap_seconds=6.0,
+        neural_checkpoint=model_path if model_path.exists() else None
     )
 
     all_segments = segmenter.process_all_sessions(b_dir)
