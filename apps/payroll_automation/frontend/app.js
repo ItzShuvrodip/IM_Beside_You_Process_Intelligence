@@ -7334,10 +7334,270 @@ const DEFAULT_CASES = [
 document.addEventListener('DOMContentLoaded', async () => {
     state.cases = JSON.parse(JSON.stringify(DEFAULT_CASES));
     initTheme();
+    initLang();
     bindEventHandlers();
     await checkApiConnection();
     renderAllViews();
 });
+
+// Internationalization (EN / JA)
+const I18N_DICT = {
+    en: {
+        eyebrow: "Enterprise Process Intelligence",
+        header_title: "Payroll Deduction Automation Suite",
+        header_sub: "Deterministic Statutory Engine · Labor Policy Copilot · Pre-Flight ERP Staging",
+        engine_active: "Engine Active (Port 8500)",
+        policy_copilot: "Policy Copilot",
+        kpi_total: "Total Claims Processed",
+        kpi_total_sub: "Ingested across active sessions",
+        kpi_stp: "Straight-Through Approved",
+        kpi_stp_sub: "straight-through efficiency",
+        kpi_exceptions: "Exception Review Queue",
+        kpi_exceptions_sub: "Threshold breaches & variances",
+        kpi_rejected: "Statutory Rejections",
+        kpi_rejected_sub: "Contractual restrictions applied",
+        kpi_net: "Audited Net Adjustment",
+        kpi_net_sub: "Reconciled payroll total",
+        kpi_time: "Clerical Time Reclaimed",
+        kpi_time_sub: "Benchmark: 182s manual cycle",
+        nav_batch: "Batch Ingestion Center",
+        nav_exceptions: "Exception Review Desk",
+        nav_staging: "HRIS & ERP Commit Hub",
+        nav_audit: "Cryptographic Audit Ledger",
+        nav_sandbox: "Interactive Claim Simulator",
+        card_batch_title: "Automated Batch Ingestion & Statutory Compliance Engine",
+        card_batch_desc: "Ingest monthly payroll adjustment files (CSV or Excel) containing Japanese or English column headers. The deterministic engine executes sub-millisecond evaluation against statutory commuter caps (Income Tax Act Art. 21), telework allowances, contract housing restrictions (Gyomu Itaku Kyuuyo Kitei Art. 4), and statutory deduction ceilings (Labor Standards Act Art. 24).",
+        dropzone_title: "Drag and drop payroll claim files here, or click to browse",
+        dropzone_sub: "Supports .CSV, .XLSX, and .XLS with automated multilingual column normalization",
+        btn_select_file: "Select File",
+        btn_sample_1: "Load Production Batch #1",
+        btn_sample_2: "Load Edge Cases Batch #2",
+        master_ledger_title: "Master Evaluated Claims Ledger",
+        search_placeholder: "Search by Employee ID, Contract, or Reason...",
+        opt_all: "All Statuses",
+        opt_approved: "Auto-Approved",
+        opt_flagged: "Flagged for Review",
+        opt_rejected: "Rejected",
+        opt_supervisor: "Supervisor Approved",
+        btn_export_csv: "Export CSV",
+        btn_export_erp: "Export ERP Payloads",
+        btn_reset: "Reset",
+        col_case_id: "Case ID",
+        col_employee: "Employee / Contract",
+        col_status: "Status",
+        col_audit_trail: "Statutory Basis & Decision Audit Notes",
+        col_gross: "Gross Additions",
+        col_deductions: "Deductions",
+        col_net: "Net Adjustment",
+        col_actions: "Actions",
+        exceptions_title: "Human-in-the-Loop Exception Review Desk",
+        exceptions_desc: "Claims requiring supervisory judgment due to statutory commuting cap breaches, telework guideline limits, or contractual restrictions. Supervisors can inspect mathematical breakdowns, consult the AI Policy Copilot, and execute legally binding overrides with cryptographic audit logging.",
+        col_rationale: "Flagged Audit Rationale",
+        staging_title: "HRIS & ERP Pre-Flight Staging Buffer",
+        staging_desc: "Pre-flight staging zone for SAP, Oracle, Workday, and Freee payroll APIs. Only records with verified statutory compliance are queued for downstream batch synchronization.",
+        btn_commit_staging: "Commit Staged Payloads to ERP",
+        col_payload_ref: "Payload Reference",
+        col_emp_id: "Employee ID",
+        col_contract_class: "Contract Classification",
+        col_approved_net: "Approved Net (JPY)",
+        col_passed_rules: "Statutory Verifications Passed",
+        col_erp_status: "ERP Sync Status",
+        audit_title: "Tamper-Evident SHA-256 Audit Trail",
+        audit_desc: "Immutable transaction ledger. Every automated evaluation, exception trigger, and supervisor override generates an SHA-256 cryptographic digest sealing the case ID, timestamp, decision code, and operator digital signature for external labor compliance audits.",
+        btn_verify_hashes: "Verify Cryptographic Hashes",
+        col_timestamp: "Timestamp (UTC)",
+        col_event_type: "Event Type",
+        col_actor: "Actor",
+        col_digest: "SHA-256 Digest",
+        col_details: "Details",
+        sim_title: "Single Claim Deterministic Simulator",
+        sim_desc: "Test statutory rules, assess borderline edge cases, and inspect how additions and deductions interact under Japanese labor regulations.",
+        lbl_emp_id: "Employee ID",
+        lbl_contract_type: "Contract Classification",
+        opt_contract_regular: "Regular Employee (Seishain)",
+        opt_contract_keiyaku: "Contract Worker (Keiyaku)",
+        opt_contract_parttime: "Part-Time Staff (Arubaito)",
+        opt_contract_outsourcing: "Outsourcing Contractor (Gyomu Itaku)",
+        lbl_commute: "Commuting Allowance (JPY)",
+        hint_commute: "Statutory tax-free cap: ¥150,000 / month",
+        lbl_telework: "Telework Allowance (JPY)",
+        hint_telework: "Guideline rate: ¥250/day up to ¥5,000 / month",
+        lbl_housing: "Housing Subsidy (JPY)",
+        hint_housing: "Disallowed for Outsourcing contracts under Article 4",
+        lbl_social: "Social Insurance Deduction (JPY)",
+        lbl_resident: "Resident Tax Deduction (JPY)",
+        lbl_custom_ded: "Custom Deductions (JPY)",
+        hint_custom_ded: "Capped at 20% of gross additions under Article 24",
+        btn_sim_exec: "Execute Deterministic Evaluation",
+        sim_result_title: "Deterministic Evaluation Result",
+        sim_idle_msg: "Submit claim inputs on the left to inspect sub-millisecond evaluation results.",
+        modal_override_title: "Supervisor Discretionary Authorization",
+        modal_case_ref: "Case Reference",
+        modal_emp_label: "Employee",
+        modal_findings: "Audit Trigger Findings",
+        modal_statutory: "Statutory Authority",
+        modal_determination: "Supervisor Determination",
+        modal_opt_approve: "Approve with Documented Exception Justification",
+        modal_opt_reject: "Confirm Rejection (Return Claim to Submitter)",
+        modal_justification: "Statutory Justification & Audit Memo",
+        modal_supv_id: "Supervisor ID",
+        modal_pin: "Digital PIN / Authorization Code",
+        btn_cancel: "Cancel",
+        btn_submit_override: "Authorize & Seal Ledger Entry",
+        copilot_title: "Labor Policy Copilot",
+        copilot_sub: "Japanese Labor Law & Corporate Policy Grounded",
+        copilot_send: "Send"
+    },
+    ja: {
+        eyebrow: "エンタープライズ・プロセスマイニング",
+        header_title: "給与控除調整 自動化スイート",
+        header_sub: "確定的一定規則エンジン · 労働政策AIコパイロット · ERP事前ステージング",
+        engine_active: "エンジン稼働中 (ポート 8500)",
+        policy_copilot: "AI規程コパイロット",
+        kpi_total: "総処理件数",
+        kpi_total_sub: "有効セッション内のインポート総数",
+        kpi_stp: "自動承認済件数",
+        kpi_stp_sub: "自動処理（STP）効率",
+        kpi_exceptions: "例外レビュー待ち",
+        kpi_exceptions_sub: "基準値超過・差分検知",
+        kpi_rejected: "規程違反却下",
+        kpi_rejected_sub: "契約区分制限の適用",
+        kpi_net: "純支給調整総額",
+        kpi_net_sub: "調整済み給与総額",
+        kpi_time: "削減工数時間",
+        kpi_time_sub: "基準: 1件あたり手作業182秒",
+        nav_batch: "一括インポートセンター",
+        nav_exceptions: "例外レビューデスク",
+        nav_staging: "HRIS / ERP連携ハブ",
+        nav_audit: "暗号化監査台帳",
+        nav_sandbox: "手当控除シミュレーター",
+        card_batch_title: "給与控除一括インポート & 法令遵守判定エンジン",
+        card_batch_desc: "日本語または英語ヘッダーの月次給与調整ファイル（CSVまたはExcel）を取り込みます。所得税法第21条（通勤手当非課税限度額）、テレワーク手当、業務委託給与規程第4条（住宅手当適用除外）、労働基準法第24条（控除上限）に基づきミリ秒未満で確定判定します。",
+        dropzone_title: "給与控除調整CSVまたはExcelファイルをドロップ、またはクリックして参照",
+        dropzone_sub: ".CSV, .XLSX, .XLS対応 · 多言語カラム自動正規化",
+        btn_select_file: "ファイルを選択",
+        btn_sample_1: "本番バッチ #1 読込 (120件)",
+        btn_sample_2: "例外検証バッチ #2 読込 (50件)",
+        master_ledger_title: "判定済み給与申請一覧台帳",
+        search_placeholder: "従業員ID、契約区分、理由で検索...",
+        opt_all: "すべてのステータス",
+        opt_approved: "自動承認済",
+        opt_flagged: "要確認・レビュー",
+        opt_rejected: "規程違反却下",
+        opt_supervisor: "管理者承認済",
+        btn_export_csv: "CSV出力",
+        btn_export_erp: "基幹ERP連携出力",
+        btn_reset: "初期化リセット",
+        col_case_id: "ケースID",
+        col_employee: "従業員 / 契約形態",
+        col_status: "ステータス",
+        col_audit_trail: "監査証跡 & 判定ルール",
+        col_gross: "支給加算",
+        col_deductions: "控除合計",
+        col_net: "差引支給調整額",
+        col_actions: "操作",
+        exceptions_title: "人間協調型 例外レビューデスク",
+        exceptions_desc: "通勤費上限超過、テレワーク指針超過、業務委託契約制限など管理者判断を要する案件です。計算根拠とAI規程コパイロットを参照し、暗号化監査ログを付与して適法な特認決裁が可能です。",
+        col_rationale: "警告理由・規程抵触根拠",
+        staging_title: "HRIS & ERP 事前ステージングバッファ",
+        staging_desc: "SAP、SmartHR、freee、オービック7等の給与API向け送信前ステージングです。適法確認済みのレコードのみが下流の自動連携対象となります。",
+        btn_commit_staging: "ERPへ連携確定コミット",
+        col_payload_ref: "連携参照ID",
+        col_emp_id: "従業員ID",
+        col_contract_class: "雇用契約区分",
+        col_approved_net: "承認済差引額 (円)",
+        col_passed_rules: "合格判定規程一覧",
+        col_erp_status: "ERP同期状態",
+        audit_title: "改ざん防止 SHA-256 監査台帳",
+        audit_desc: "不変トランザクション台帳。すべての自動判定、例外検知、管理者特認決裁時にSHA-256ダイジェストを自動発行し、外部労働監査に耐えうる証跡を保全します。",
+        btn_verify_hashes: "暗号ハッシュ完全性検証",
+        col_timestamp: "記録日時 (UTC)",
+        col_case_id: "ケースID",
+        col_event_type: "イベント種別",
+        col_actor: "実行主体",
+        col_digest: "SHA-256 ダイジェスト",
+        col_details: "詳細メモ",
+        sim_title: "単一案件 確定判定シミュレーター",
+        sim_desc: "日本の労働諸法令および就業規則に基づき、手当支給と控除の整合性を即座にシミュレーションします。",
+        lbl_emp_id: "従業員ID",
+        lbl_contract_type: "雇用契約形態",
+        opt_contract_regular: "正社員",
+        opt_contract_keiyaku: "契約社員",
+        opt_contract_parttime: "パート・アルバイト",
+        opt_contract_outsourcing: "業務委託",
+        lbl_commute: "通勤手当申請額 (円)",
+        hint_commute: "所得税法非課税限度額: 月額 150,000円",
+        lbl_telework: "テレワーク手当申請額 (円)",
+        hint_telework: "社内基準: 日額250円 / 月額上限 5,000円",
+        lbl_housing: "住宅手当申請額 (円)",
+        hint_housing: "業務委託規程第4条により業務委託は支給対象外",
+        lbl_social: "社会保険料控除 (円)",
+        lbl_resident: "住民税控除 (円)",
+        lbl_custom_ded: "任意控除項目 (円)",
+        hint_custom_ded: "労基法第24条協定基準: 支給加算額の20%以内",
+        btn_sim_exec: "確定ルール判定を実行",
+        sim_result_title: "確定ルール判定結果",
+        sim_idle_msg: "左側の入力フォームに値を指定し、ミリ秒未満の判定を実行してください。",
+        modal_override_title: "管理者 裁量承認・特認決裁",
+        modal_case_ref: "申請参照番号",
+        modal_emp_label: "対象従業員",
+        modal_findings: "警告トリガー検出理由",
+        modal_statutory: "根拠法令・規程条項",
+        modal_determination: "管理者の決定",
+        modal_opt_approve: "理由書を添付して特認承認",
+        modal_opt_reject: "規程違反を確定して差し戻し却下",
+        modal_justification: "決裁理由および監査記録メモ",
+        modal_supv_id: "承認者ID",
+        modal_pin: "デジタル認証PIN",
+        btn_cancel: "キャンセル",
+        btn_submit_override: "決裁を確定して台帳に記録",
+        copilot_title: "労働法規 AIコパイロット",
+        copilot_sub: "日本の労働基準法・所得税法・就業規則に準拠",
+        copilot_send: "送信"
+    }
+};
+
+function initLang() {
+    const saved = localStorage.getItem('imby_lang') || 'en';
+    setLang(saved);
+}
+
+function setLang(lang) {
+    state.lang = lang;
+    localStorage.setItem('imby_lang', lang);
+
+    const btnEn = document.getElementById('btn-lang-en');
+    const btnJa = document.getElementById('btn-lang-ja');
+    if (btnEn && btnJa) {
+        if (lang === 'ja') {
+            btnJa.classList.add('active');
+            btnEn.classList.remove('active');
+        } else {
+            btnEn.classList.add('active');
+            btnJa.classList.remove('active');
+        }
+    }
+
+    const dict = I18N_DICT[lang] || I18N_DICT.en;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) {
+            el.textContent = dict[key];
+        }
+    });
+
+    const searchInput = document.getElementById('queue-search');
+    if (searchInput && dict.search_placeholder) {
+        searchInput.placeholder = dict.search_placeholder;
+    }
+
+    // Refresh active views
+    renderClaimsTable();
+    renderExceptionsTable();
+    renderStagingTable();
+    renderAuditLedger();
+    updateKPIs();
+}
 
 // Theme Management
 function initTheme() {
@@ -7363,6 +7623,11 @@ function setTheme(t) {
 
 // Event Bindings
 function bindEventHandlers() {
+    // Language toggle
+    const btnEn = document.getElementById('btn-lang-en');
+    const btnJa = document.getElementById('btn-lang-ja');
+    if (btnEn) btnEn.addEventListener('click', () => setLang('en'));
+    if (btnJa) btnJa.addEventListener('click', () => setLang('ja'));
     // Theme toggle
     const themeBtn = document.getElementById('btn-theme-toggle');
     if (themeBtn) {
@@ -7542,6 +7807,44 @@ async function fetchCasesFromApi() {
     }
 }
 
+// Format Helpers for Internationalization
+function formatContractType(contract) {
+    const isJa = state.lang === 'ja';
+    const c = (contract || '').toLowerCase();
+    if (isJa) {
+        if (c === 'regular') return '正社員';
+        if (c === 'contract') return '契約社員';
+        if (c === 'outsourcing') return '業務委託';
+        if (c === 'part_time') return 'パート・アルバイト';
+        return contract || '-';
+    }
+    return contract ? contract.charAt(0).toUpperCase() + contract.slice(1) : '-';
+}
+
+function formatStatusPill(status) {
+    const isJa = state.lang === 'ja';
+    let label = status || '';
+    let badgeClass = 'status-approved';
+
+    if (status === 'FLAGGED_FOR_REVIEW') {
+        badgeClass = 'status-flagged';
+        label = isJa ? '要確認・レビュー' : 'FLAGGED_FOR_REVIEW';
+    } else if (status === 'REJECTED' || status === 'REJECTED_BY_SUPERVISOR') {
+        badgeClass = 'status-rejected';
+        label = isJa ? '規程違反却下' : 'REJECTED';
+    } else if (status && (status.includes('SUPERVISOR') || status.includes('OVERRIDE'))) {
+        badgeClass = 'status-supervisor';
+        label = isJa ? '管理者承認済' : 'SUPERVISOR_APPROVED';
+    } else if (status === 'AUTO_APPROVED') {
+        badgeClass = 'status-approved';
+        label = isJa ? '自動承認済' : 'AUTO_APPROVED';
+    } else if (status === 'STAGED_READY') {
+        badgeClass = 'status-approved';
+        label = isJa ? '連携待機完了' : 'STAGED_READY';
+    }
+    return `<span class="status-pill ${badgeClass}">${label}</span>`;
+}
+
 // Rendering Logic
 function renderAllViews() {
     updateKpis();
@@ -7550,6 +7853,8 @@ function renderAllViews() {
     renderStagingTable();
     renderAuditLedger();
 }
+
+const updateKPIs = updateKpis;
 
 function updateKpis() {
     const total = state.cases.length;
@@ -7579,7 +7884,7 @@ function updateKpis() {
     if (elFlagged) elFlagged.innerText = flagged.toLocaleString();
     if (elRejected) elRejected.innerText = rejected.toLocaleString();
     if (elNet) elNet.innerText = `¥${netSum.toLocaleString()}`;
-    if (elHours) elHours.innerText = `${hoursSaved} hrs`;
+    if (elHours) elHours.innerText = state.lang === 'ja' ? `${hoursSaved} 時間` : `${hoursSaved} hrs`;
 }
 
 function renderClaimsTable() {
@@ -7587,6 +7892,7 @@ function renderClaimsTable() {
     if (!tbody) return;
     tbody.innerHTML = '';
 
+    const isJa = state.lang === 'ja';
     const q = state.searchQuery;
     const f = state.activeFilter;
 
@@ -7614,7 +7920,7 @@ function renderClaimsTable() {
 
     if (filtered.length === 0) {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td colspan="8" style="text-align: center; color: var(--text-muted); padding: 36px;">No claims match criteria.</td>`;
+        tr.innerHTML = `<td colspan="8" style="text-align: center; color: var(--text-muted); padding: 36px;">${isJa ? '条件に一致する案件はありません。' : 'No claims match criteria.'}</td>`;
         tbody.appendChild(tr);
         return;
     }
@@ -7624,27 +7930,25 @@ function renderClaimsTable() {
         const inp = c.input_data || {};
         const calc = c.calculated_details || {};
 
-        let badgeClass = 'status-approved';
-        if (c.status === 'FLAGGED_FOR_REVIEW') badgeClass = 'status-flagged';
-        else if (c.status === 'REJECTED' || c.status === 'REJECTED_BY_SUPERVISOR') badgeClass = 'status-rejected';
-        else if (c.status.includes('SUPERVISOR') || c.status.includes('OVERRIDE')) badgeClass = 'status-supervisor';
-
         const gross = calc.total_gross_addition !== undefined ? `+¥${calc.total_gross_addition.toLocaleString()}` : '-';
         const ded = calc.total_deduction !== undefined ? `-¥${calc.total_deduction.toLocaleString()}` : '-';
         const net = calc.net_adjustment !== undefined ? `¥${calc.net_adjustment.toLocaleString()}` : '-';
 
-        let actionHtml = `<button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.72rem;" onclick="consultCopilotForCase('${c.case_id}')">Copilot</button>`;
+        const copilotLabel = isJa ? 'コパイロット' : 'Copilot';
+        const reviewLabel = isJa ? 'レビュー' : 'Review';
+
+        let actionHtml = `<button class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.72rem;" onclick="consultCopilotForCase('${c.case_id}')">${copilotLabel}</button>`;
         if (c.status === 'FLAGGED_FOR_REVIEW') {
-            actionHtml += ` <button class="action-chip review" onclick="openOverrideModal('${c.case_id}')">Review</button>`;
+            actionHtml += ` <button class="action-chip review" onclick="openOverrideModal('${c.case_id}')">${reviewLabel}</button>`;
         }
 
         tr.innerHTML = `
             <td style="font-family: var(--font-mono); font-weight: 700; color: var(--brand-accent);">${c.case_id}</td>
             <td>
                 <div style="font-weight: 600;">${inp.employee_name}</div>
-                <div style="font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-mono);">${inp.employee_id} · <span style="text-transform: capitalize;">${inp.contract_type}</span></div>
+                <div style="font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-mono);">${inp.employee_id} · <span>${formatContractType(inp.contract_type)}</span></div>
             </td>
-            <td><span class="status-pill ${badgeClass}">${c.status}</span></td>
+            <td>${formatStatusPill(c.status)}</td>
             <td style="font-size: 0.78rem; color: var(--text-secondary); max-width: 320px; line-height: 1.4;">${c.decision_notes}</td>
             <td class="num-cell" style="color: var(--success-text);">${gross}</td>
             <td class="num-cell" style="color: var(--danger-text);">${ded}</td>
@@ -7660,10 +7964,11 @@ function renderExceptionsTable() {
     if (!tbody) return;
     tbody.innerHTML = '';
 
+    const isJa = state.lang === 'ja';
     const exceptions = state.cases.filter(c => c.status === 'FLAGGED_FOR_REVIEW');
     if (exceptions.length === 0) {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td colspan="7" style="text-align: center; color: var(--text-muted); padding: 36px;">No pending exceptions. All claims comply with policy rules.</td>`;
+        tr.innerHTML = `<td colspan="7" style="text-align: center; color: var(--text-muted); padding: 36px;">${isJa ? '未処理の例外案件はありません。すべての申請が規程に準拠しています。' : 'No pending exceptions. All claims comply with policy rules.'}</td>`;
         tbody.appendChild(tr);
         return;
     }
@@ -7675,19 +7980,20 @@ function renderExceptionsTable() {
         const gross = calc.total_gross_addition !== undefined ? `+¥${calc.total_gross_addition.toLocaleString()}` : '-';
         const ded = calc.total_deduction !== undefined ? `-¥${calc.total_deduction.toLocaleString()}` : '-';
         const net = calc.net_adjustment !== undefined ? `¥${calc.net_adjustment.toLocaleString()}` : '-';
+        const overrideLabel = isJa ? '特別承認・決裁' : 'Authorize Override';
 
         tr.innerHTML = `
             <td style="font-family: var(--font-mono); font-weight: 700; color: var(--brand-accent);">${c.case_id}</td>
             <td>
                 <div style="font-weight: 600;">${inp.employee_name}</div>
-                <div style="font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-mono);">${inp.employee_id} · <span style="text-transform: capitalize;">${inp.contract_type}</span></div>
+                <div style="font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-mono);">${inp.employee_id} · <span>${formatContractType(inp.contract_type)}</span></div>
             </td>
             <td style="font-size: 0.78rem; color: var(--warning-text); font-family: var(--font-mono); line-height: 1.4;">${c.decision_notes}</td>
             <td class="num-cell" style="color: var(--success-text);">${gross}</td>
             <td class="num-cell" style="color: var(--danger-text);">${ded}</td>
             <td class="num-cell" style="font-weight: 700;">${net}</td>
             <td style="text-align: center;">
-                <button class="action-chip review" onclick="openOverrideModal('${c.case_id}')">Authorize Override</button>
+                <button class="action-chip review" onclick="openOverrideModal('${c.case_id}')">${overrideLabel}</button>
             </td>
         `;
         tbody.appendChild(tr);
@@ -7699,13 +8005,16 @@ function renderStagingTable() {
     if (!tbody) return;
     tbody.innerHTML = '';
 
+    const isJa = state.lang === 'ja';
     const staged = state.cases.filter(c => c.status === 'AUTO_APPROVED' || c.status === 'SUPERVISOR_OVERRIDE_APPROVED' || c.status === 'APPROVED_BY_SUPERVISOR');
     if (staged.length === 0) {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td colspan="6" style="text-align: center; color: var(--text-muted); padding: 36px;">No records staged. Ingest and evaluate claims to stage.</td>`;
+        tr.innerHTML = `<td colspan="6" style="text-align: center; color: var(--text-muted); padding: 36px;">${isJa ? 'ステージングされたデータはありません。申請を取り込んで評価を実行してください。' : 'No records staged. Ingest and evaluate claims to stage.'}</td>`;
         tbody.appendChild(tr);
         return;
     }
+
+    const citationText = isJa ? '所得税法21条、労基法24条、就業規程§4' : 'Tax Act Art. 21, LSA Art. 24, Internal §4';
 
     staged.forEach(c => {
         const tr = document.createElement('tr');
@@ -7716,10 +8025,10 @@ function renderStagingTable() {
         tr.innerHTML = `
             <td style="font-family: var(--font-mono); font-weight: 600; color: var(--brand-accent);">${c.case_id}</td>
             <td style="font-family: var(--font-mono);">${inp.employee_id}</td>
-            <td style="text-transform: capitalize;">${inp.contract_type}</td>
+            <td>${formatContractType(inp.contract_type)}</td>
             <td class="num-cell" style="font-weight: 700; color: var(--success-text);">${net}</td>
-            <td style="font-size: 0.78rem; color: var(--text-secondary);">Tax Act Art. 21, LSA Art. 24, Internal §4</td>
-            <td><span class="status-pill status-approved">STAGED_READY</span></td>
+            <td style="font-size: 0.78rem; color: var(--text-secondary);">${citationText}</td>
+            <td>${formatStatusPill('STAGED_READY')}</td>
         `;
         tbody.appendChild(tr);
     });
@@ -7730,15 +8039,18 @@ function renderAuditLedger() {
     if (!tbody) return;
     tbody.innerHTML = '';
 
+    const isJa = state.lang === 'ja';
     const records = state.cases.slice(0, 20);
+    const actorLabel = isJa ? '確定判定エンジン' : 'Autonomous Engine';
+
     records.forEach(c => {
         const tr = document.createElement('tr');
         const hash = generateHash(`${c.case_id}:${c.status}:${c.audit_id || 'AUD'}`);
         tr.innerHTML = `
             <td style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);">${new Date().toISOString().substring(0, 19)}Z</td>
             <td style="font-family: var(--font-mono); font-weight: 600;">${c.case_id}</td>
-            <td><span class="status-pill ${c.status === 'AUTO_APPROVED' ? 'status-approved' : 'status-flagged'}">${c.status}</span></td>
-            <td style="font-size: 0.78rem;">Autonomous Engine</td>
+            <td>${formatStatusPill(c.status)}</td>
+            <td style="font-size: 0.78rem;">${actorLabel}</td>
             <td style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--brand-accent);">${hash}</td>
             <td style="font-size: 0.75rem; color: var(--text-secondary); max-width: 260px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${c.decision_notes}</td>
         `;
@@ -8125,21 +8437,28 @@ function handleSimulatorSubmit(e) {
     // Render diagnostic card in simulator view
     const resultCard = document.getElementById('sim-result-card');
     if (resultCard) {
+        const isJa = state.lang === 'ja';
         const isApproved = res.status === 'AUTO_APPROVED';
+        const noteHeading = isJa ? '法令監査メモ・判定根拠:' : 'Statutory Audit Notes:';
+        const lblCommute = isJa ? '認可通勤費' : 'Approved Commute';
+        const lblTele = isJa ? '認可テレワーク手当' : 'Approved Telework';
+        const lblHouse = isJa ? '認可住宅手当' : 'Approved Housing';
+        const lblNet = isJa ? '差引支給調整額' : 'Net Adjustment';
+
         resultCard.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
                 <span style="font-family: var(--font-mono); font-weight: 700; color: var(--brand-accent);">${res.case_id}</span>
-                <span class="status-pill ${isApproved ? 'status-approved' : 'status-flagged'}">${res.status}</span>
+                ${formatStatusPill(res.status)}
             </div>
             <div style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 12px;">
-                <strong>Statutory Audit Notes:</strong><br />
+                <strong>${noteHeading}</strong><br />
                 ${res.decision_notes}
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-family: var(--font-mono); font-size: 0.8rem; background: var(--bg-surface-elevated); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
-                <div>Approved Commute: ¥${(res.calculated_details.approved_commute || 0).toLocaleString()}</div>
-                <div>Approved Telework: ¥${(res.calculated_details.approved_telework || 0).toLocaleString()}</div>
-                <div>Approved Housing: ¥${(res.calculated_details.approved_housing || 0).toLocaleString()}</div>
-                <div style="font-weight: 700; color: var(--brand-accent);">Net Adjustment: ¥${(res.calculated_details.net_adjustment || 0).toLocaleString()}</div>
+                <div>${lblCommute}: ¥${(res.calculated_details.approved_commute || 0).toLocaleString()}</div>
+                <div>${lblTele}: ¥${(res.calculated_details.approved_telework || 0).toLocaleString()}</div>
+                <div>${lblHouse}: ¥${(res.calculated_details.approved_housing || 0).toLocaleString()}</div>
+                <div style="font-weight: 700; color: var(--brand-accent);">${lblNet}: ¥${(res.calculated_details.net_adjustment || 0).toLocaleString()}</div>
             </div>
         `;
     }

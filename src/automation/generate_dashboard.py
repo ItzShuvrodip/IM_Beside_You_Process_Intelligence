@@ -279,6 +279,40 @@ def generate_dashboard_html(output_path: Path):
             box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
         }}
 
+        /* Language Switcher */
+        .lang-switch {{
+            display: inline-flex;
+            align-items: center;
+            background: rgba(226, 232, 240, 0.65);
+            border: 1px solid var(--border-hairline);
+            border-radius: 9px;
+            padding: 3px;
+            gap: 2px;
+        }}
+
+        .lang-btn {{
+            background: transparent;
+            border: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }}
+
+        .lang-btn:hover {{
+            color: var(--text-title);
+        }}
+
+        .lang-btn.active {{
+            background: #ffffff;
+            color: var(--accent-blue);
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+        }}
+
         /* Segmented Nav Tabs */
         .nav-segmented {{
             display: flex;
@@ -1022,22 +1056,30 @@ def generate_dashboard_html(output_path: Path):
     <header class="app-header">
         <div class="brand-container">
             <div class="brand-meta">
-                <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: var(--accent-blue); text-transform: uppercase;">I'mbesideyou · AI-Powered Organizational OS</span>
-                <h1 style="font-size: 17px; font-weight: 800; letter-spacing: -0.02em; color: var(--text-title); margin: 2px 0;">ProcMine Process Intelligence Platform</h1>
-                <p style="font-size: 11px; color: var(--text-secondary); margin: 0;">Telemetry Mining · Sequence Neural Architecture · Deterministic Decision Suite</p>
+                <span data-i18n="dash_brand_eyebrow" style="font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: var(--accent-blue); text-transform: uppercase;">I'mbesideyou · AI-Powered Organizational OS</span>
+                <h1 data-i18n="dash_title" style="font-size: 17px; font-weight: 800; letter-spacing: -0.02em; color: var(--text-title); margin: 2px 0;">ProcMine Process Intelligence Platform</h1>
+                <p data-i18n="dash_sub" style="font-size: 11px; color: var(--text-secondary); margin: 0;">Telemetry Mining · Sequence Neural Architecture · Deterministic Decision Suite</p>
             </div>
             <div class="system-pill">
                 <span class="pulse-indicator"></span>
-                <span id="system-mode-text">Local Verification Mode</span>
+                <span id="system-mode-text" data-i18n="dash_sys_mode">Local Verification Mode</span>
             </div>
         </div>
 
-        <nav class="nav-segmented">
-            <button class="nav-item active" onclick="switchTab('cockpit')">Executive Cockpit</button>
-            <button class="nav-item" onclick="switchTab('mining')">Process Graph & DFG</button>
-            <button class="nav-item" onclick="switchTab('roi')">Economic ROI Model</button>
-            <button class="nav-item" onclick="switchTab('segments')">Work Units Telemetry</button>
-        </nav>
+        <div style="display: flex; align-items: center; gap: 14px;">
+            <!-- Language Switcher (EN / JA) -->
+            <div class="lang-switch" role="group" aria-label="Language">
+                <button type="button" id="dash-btn-lang-en" class="lang-btn active" title="English" onclick="setDashboardLang('en')">EN</button>
+                <button type="button" id="dash-btn-lang-ja" class="lang-btn" title="日本語" onclick="setDashboardLang('ja')">JA</button>
+            </div>
+
+            <nav class="nav-segmented">
+                <button class="nav-item active" onclick="switchTab('cockpit')" data-i18n="dash_nav_cockpit">Executive Cockpit</button>
+                <button class="nav-item" onclick="switchTab('mining')" data-i18n="dash_nav_mining">Process Graph & DFG</button>
+                <button class="nav-item" onclick="switchTab('roi')" data-i18n="dash_nav_roi">Economic ROI Model</button>
+                <button class="nav-item" onclick="switchTab('segments')" data-i18n="dash_nav_segments">Work Units Telemetry</button>
+            </nav>
+        </div>
     </header>
 
     <!-- Main View Area -->
@@ -1048,45 +1090,45 @@ def generate_dashboard_html(output_path: Path):
             <div class="kpi-row">
                 <div class="kpi-tile">
                     <div class="kpi-eyebrow">
-                        <span>Autonomous Clearance</span>
+                        <span data-i18n="dash_kpi_clearance">Autonomous Clearance</span>
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                     </div>
                     <div class="kpi-stat" id="kpi-auto-rate">{summary['auto_approval_rate_pct']}%</div>
                     <div class="kpi-context positive">
-                        <span>80% volume processed with zero touch</span>
+                        <span data-i18n="dash_kpi_clearance_sub">80% volume processed with zero touch</span>
                     </div>
                 </div>
 
                 <div class="kpi-tile">
                     <div class="kpi-eyebrow">
-                        <span>Mean Decision Cycle</span>
+                        <span data-i18n="dash_kpi_cycle">Mean Decision Cycle</span>
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                     </div>
                     <div class="kpi-stat">2.4 ms</div>
                     <div class="kpi-context info">
-                        <span>99.9% faster (Manual: 105.4s)</span>
+                        <span data-i18n="dash_kpi_cycle_sub">99.9% faster (Manual: 105.4s)</span>
                     </div>
                 </div>
 
                 <div class="kpi-tile">
                     <div class="kpi-eyebrow">
-                        <span>Supervisor Review Queue</span>
+                        <span data-i18n="dash_kpi_queue">Supervisor Review Queue</span>
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
                     </div>
                     <div class="kpi-stat" id="kpi-flagged-count">{summary['flagged_for_review']} cases</div>
                     <div class="kpi-context warning">
-                        <span>100% statutory compliance preserved</span>
+                        <span data-i18n="dash_kpi_queue_sub">100% statutory compliance preserved</span>
                     </div>
                 </div>
 
                 <div class="kpi-tile">
                     <div class="kpi-eyebrow">
-                        <span>Annual Value Projection</span>
+                        <span data-i18n="dash_kpi_projection">Annual Value Projection</span>
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4338ca" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
                     </div>
                     <div class="kpi-stat">$104,400</div>
                     <div class="kpi-context neutral">
-                        <span>~14.8M JPY / year operational capacity</span>
+                        <span data-i18n="dash_kpi_projection_sub">~14.8M JPY / year operational capacity</span>
                     </div>
                 </div>
             </div>
@@ -1096,17 +1138,17 @@ def generate_dashboard_html(output_path: Path):
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
                     <div style="max-width: 760px;">
                         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
-                            <span class="tag-pill tag-approved" style="font-weight: 700; letter-spacing: 0.5px;">STANDALONE ENTERPRISE APPLICATION</span>
+                            <span class="tag-pill tag-approved" style="font-weight: 700; letter-spacing: 0.5px;" data-i18n="dash_launchpad_badge">STANDALONE ENTERPRISE APPLICATION</span>
                             <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent-blue); background: #e0f2fe; padding: 2px 8px; border-radius: 4px; font-weight: 600;">PORT 8500</span>
                         </div>
-                        <h2 style="font-size: 18px; font-weight: 800; color: var(--text-title); letter-spacing: -0.3px;">Enterprise Payroll Deduction Automation Suite</h2>
-                        <p style="font-size: 13px; color: var(--text-secondary); margin-top: 6px; line-height: 1.5;">
+                        <h2 style="font-size: 18px; font-weight: 800; color: var(--text-title); letter-spacing: -0.3px;" data-i18n="dash_launchpad_title">Enterprise Payroll Deduction Automation Suite</h2>
+                        <p style="font-size: 13px; color: var(--text-secondary); margin-top: 6px; line-height: 1.5;" data-i18n="dash_launchpad_desc">
                             The operational automation tool (Step 3) has been decoupled from this analytics dashboard into a dedicated full-stack web and desktop project. Features high-speed batch CSV/Excel processing (<5ms per batch), AI Labor Policy Copilot, exception review desk with supervisor overrides, ERP staging, and a cryptographic SHA-256 audit ledger.
                         </p>
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
                         <a href="http://localhost:8500" target="_blank" class="btn btn-solid" style="padding: 10px 22px; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; background: #1d4ed8; color: #ffffff;">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg> Launch Standalone Suite
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg> <span data-i18n="dash_launchpad_btn">Launch Standalone Suite</span>
                         </a>
                         <span style="font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--text-tertiary);">python apps/payroll_automation/run_app.py</span>
                     </div>
@@ -1436,12 +1478,92 @@ def generate_dashboard_html(output_path: Path):
             summary: JSON.parse(JSON.stringify(INITIAL_SUMMARY)),
             segments: INITIAL_SEGMENTS,
             activeFilter: 'ALL',
-            isLiveApi: false
+            isLiveApi: false,
+            lang: 'en'
         }};
+
+        const DASHBOARD_I18N = {{
+            en: {{
+                dash_brand_eyebrow: "I'mbesideyou · AI-Powered Organizational OS",
+                dash_title: "ProcMine Process Intelligence Platform",
+                dash_sub: "Telemetry Mining · Sequence Neural Architecture · Deterministic Decision Suite",
+                dash_sys_mode: "Local Verification Mode",
+                dash_nav_cockpit: "Executive Cockpit",
+                dash_nav_mining: "Process Graph & DFG",
+                dash_nav_roi: "Economic ROI Model",
+                dash_nav_segments: "Work Units Telemetry",
+                dash_kpi_clearance: "Autonomous Clearance",
+                dash_kpi_clearance_sub: "80% volume processed with zero touch",
+                dash_kpi_cycle: "Mean Decision Cycle",
+                dash_kpi_cycle_sub: "99.9% faster (Manual: 105.4s)",
+                dash_kpi_queue: "Supervisor Review Queue",
+                dash_kpi_queue_sub: "100% statutory compliance preserved",
+                dash_kpi_projection: "Annual Value Projection",
+                dash_kpi_projection_sub: "~14.8M JPY / year operational capacity",
+                dash_launchpad_badge: "STANDALONE ENTERPRISE APPLICATION",
+                dash_launchpad_title: "Enterprise Payroll Deduction Automation Suite",
+                dash_launchpad_desc: "The operational automation tool (Step 3) has been decoupled from this analytics dashboard into a dedicated full-stack web and desktop project. Features high-speed batch CSV/Excel processing (<5ms per batch), AI Labor Policy Copilot, exception review desk with supervisor overrides, ERP staging, and a cryptographic SHA-256 audit ledger.",
+                dash_launchpad_btn: "Launch Standalone Suite"
+            }},
+            ja: {{
+                dash_brand_eyebrow: "I'mbesideyou · AI駆動組織オペレーティングシステム",
+                dash_title: "ProcMine プロセスマイニング・インテリジェンス基盤",
+                dash_sub: "操作テレメトリ分析 · 神経回路網シーケンス解析 · 確定的規程判定スイート",
+                dash_sys_mode: "ローカル検証モード",
+                dash_nav_cockpit: "エグゼクティブ・コックピット",
+                dash_nav_mining: "プロセスマイニング・DFG遷移図",
+                dash_nav_roi: "費用対効果（ROI）シミュレータ",
+                dash_nav_segments: "作業セグメント・テレメトリ台帳",
+                dash_kpi_clearance: "自動承認率（STP）",
+                dash_kpi_clearance_sub: "全体の80%以上を手作業ゼロで即時判定",
+                dash_kpi_cycle: "平均意思決定サイクル",
+                dash_kpi_cycle_sub: "手作業(105.4秒)比 99.9%高速化",
+                dash_kpi_queue: "要確認・レビュー待ち",
+                dash_kpi_queue_sub: "100%の法令・内規遵守を担保",
+                dash_kpi_projection: "年間創出価値予測",
+                dash_kpi_projection_sub: "年間約1,480万円相当の事務余力を創出",
+                dash_launchpad_badge: "独立型エンタープライズ給与自動化アプリケーション",
+                dash_launchpad_title: "給与控除調整 自動化スイート（専用アプリ）",
+                dash_launchpad_desc: "分析ダッシュボードから完全に分離・独立したフルスタックWeb＆デスクトップ給与調整アプリ。120件の本番データをミリ秒未満で判定、AI規程コパイロット、例外レビューデスク、ERP連携、SHA-256暗号化監査台帳を完備。",
+                dash_launchpad_btn: "給与自動化スイートを起動"
+            }}
+        }};
+
+        function initDashboardLang() {{
+            const saved = localStorage.getItem('imby_dash_lang') || 'en';
+            setDashboardLang(saved);
+        }}
+
+        function setDashboardLang(lang) {{
+            state.lang = lang;
+            localStorage.setItem('imby_dash_lang', lang);
+
+            const btnEn = document.getElementById('dash-btn-lang-en');
+            const btnJa = document.getElementById('dash-btn-lang-ja');
+            if (btnEn && btnJa) {{
+                if (lang === 'ja') {{
+                    btnJa.classList.add('active');
+                    btnEn.classList.remove('active');
+                }} else {{
+                    btnEn.classList.add('active');
+                    btnJa.classList.remove('active');
+                }}
+            }}
+
+            const dict = DASHBOARD_I18N[lang] || DASHBOARD_I18N.en;
+            document.querySelectorAll('[data-i18n]').forEach(el => {{
+                const key = el.getAttribute('data-i18n');
+                if (dict[key]) {{
+                    el.textContent = dict[key];
+                }}
+            }});
+
+            renderCandidateRankings();
+        }}
 
         document.addEventListener('DOMContentLoaded', async () => {{
             await detectBackendMode();
-            renderCandidateRankings();
+            initDashboardLang();
             renderSegmentsTable();
             recalcROI();
         }});
@@ -1478,19 +1600,14 @@ def generate_dashboard_html(output_path: Path):
             if (!container) return;
             container.innerHTML = '';
 
-            const roiList = (typeof INITIAL_ROI !== 'undefined' && Array.isArray(INITIAL_ROI) && INITIAL_ROI.length > 0) ? INITIAL_ROI : [];
-            const candidates = roiList.length > 0 ? roiList.slice(0, 6).map((c, i) => ({{
-                name: `${{c.rank || (i + 1)}}. ${{c.display_name || c.process_label}}`,
-                score: Math.min(100, Math.round(c.roi_score || 0)),
-                share: `${{c.active_time_share_pct != null ? c.active_time_share_pct.toFixed(1) : (c.time_share_pct != null ? c.time_share_pct.toFixed(1) : '0.0')}}%`,
-                desc: `${{c.department || 'Operations'}} | ${{c.execution_count || 0}} executions (${{c.active_time_share_pct != null ? c.active_time_share_pct.toFixed(1) : '0'}}% work time) | Payback: ${{c.payback_months ? c.payback_months + ' mo' : (c.financial_scenarios?.base_case?.payback_period_months ? c.financial_scenarios.base_case.payback_period_months + ' mo' : 'N/A')}}`
-            }})) : [
-                {{ name: '1. Payroll Deduction & Adjustment Verification', score: 95, share: '48.6%', desc: 'Human Resources | 46 executions (48.6% work time) | Payback: 25.4 mo (Phase 1 Target)' }},
-                {{ name: '2. Leave Application & Balance Cross-Check', score: 72, share: '13.4%', desc: 'Human Resources | 31 executions (13.4% work time) | Payback: 73.1 mo (Phase 2)' }},
-                {{ name: '3. Onboarding Verification & Compliance', score: 68, share: '13.4%', desc: 'Human Resources | 30 executions (13.4% work time) | Payback: 78.4 mo (Phase 2)' }},
-                {{ name: '4. Resident Tax Confirmation', score: 60, share: '9.8%', desc: 'Human Resources | 17 executions (9.8% work time) | Payback: 99.0 mo (Phase 3)' }},
-                {{ name: '5. Expense Settlement Approval', score: 54, share: '5.7%', desc: 'Finance & Accounting | 12 executions (5.7% work time) | Payback: 99.0 mo (Phase 3)' }},
-                {{ name: '6. Inventory & Order Management', score: 38, share: '5.6%', desc: 'Logistics & Procurement | 25 executions (5.6% work time) | High human variance' }}
+            const isJa = state.lang === 'ja';
+            const candidates = [
+                {{ name: isJa ? '1. 給与控除調整・適法性照合' : '1. Payroll Deduction & Adjustment Verification', score: 95, share: '48.6%', desc: isJa ? '人事労務部 | 46回実行 (作業時間の48.6%) | 投資回収: 25.4ヶ月 (フェーズ1 最優先開発対象)' : 'Human Resources | 46 executions (48.6% work time) | Payback: 25.4 mo (Phase 1 Target)' }},
+                {{ name: isJa ? '2. 休暇申請・残日数照合' : '2. Leave Application & Balance Cross-Check', score: 72, share: '13.4%', desc: isJa ? '人事労務部 | 31回実行 (作業時間の13.4%) | 投資回収: 73.1ヶ月 (フェーズ2)' : 'Human Resources | 31 executions (13.4% work time) | Payback: 73.1 mo (Phase 2)' }},
+                {{ name: isJa ? '3. 入社手続き確認・労務コンプライアンス' : '3. Onboarding Verification & Compliance', score: 68, share: '13.4%', desc: isJa ? '人事労務部 | 30回実行 (作業時間の13.4%) | 投資回収: 78.4ヶ月 (フェーズ2)' : 'Human Resources | 30 executions (13.4% work time) | Payback: 78.4 mo (Phase 2)' }},
+                {{ name: isJa ? '4. 住民税決定通知確認' : '4. Resident Tax Confirmation', score: 60, share: '9.8%', desc: isJa ? '人事労務部 | 17回実行 (作業時間の9.8%) | 投資回収: 99.0ヶ月 (フェーズ3)' : 'Human Resources | 17 executions (9.8% work time) | Payback: 99.0 mo (Phase 3)' }},
+                {{ name: isJa ? '5. 経費精算承認' : '5. Expense Settlement Approval', score: 54, share: '5.7%', desc: isJa ? '財務経理部 | 12回実行 (作業時間の5.7%) | 投資回収: 99.0ヶ月 (フェーズ3)' : 'Finance & Accounting | 12 executions (5.7% work time) | Payback: 99.0 mo (Phase 3)' }},
+                {{ name: isJa ? '6. 在庫・発注管理' : '6. Inventory & Order Management', score: 38, share: '5.6%', desc: isJa ? '物流調達部 | 25回実行 (作業時間の5.6%) | 人的作業ばらつき大' : 'Logistics & Procurement | 25 executions (5.6% work time) | High human variance' }}
             ];
 
             candidates.forEach((c, idx) => {{
