@@ -227,12 +227,12 @@ class ROIPrioritizationModel:
             operators_cnt = int(m.get("operators_count", 1))
             sessions_cnt = int(m.get("sessions_count", 1))
 
-            crit = float(attr["criticality"])
-            feas = float(attr["feasibility"])
-            std = float(attr["standardization"])
-            risk = float(attr["risk_score"])
-            auto_rate = float(attr["target_automation_rate"])
-            cog_sec = float(attr.get("cognitive_lookup_seconds", 0.0))
+            crit = attr["criticality"]
+            feas = attr["feasibility"]
+            std = attr["standardization"]
+            risk = attr["risk_score"]
+            auto_rate = attr["target_automation_rate"]
+            cog_sec = attr.get("cognitive_lookup_seconds", 0.0)
 
             # ---------------------------------------------------------------
             # Dimension 1: Operational Scale & Workload Gravity (Max 30 pts)
