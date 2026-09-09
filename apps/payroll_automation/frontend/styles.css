@@ -1,31 +1,31 @@
 /* =========================================================================
-   IMBY ENTERPRISE PAYROLL DEDUCTION AUTOMATION SUITE
-   Professional Light Workplace Design System (MS Office / Excel / SAP Standard)
-   Strict Institutional Clean White Styling · Zero Toy/AI Effects
+   IMBY ENTERPRISE PROCESS INTELLIGENCE & PAYROLL AUTOMATION SUITE
+   Aesthetic Architecture Inspired by imbesideyou.com & tsugu.life
+   Clean Institutional Hierarchy · Pure English · Seamless Light/Dark Modes
    ========================================================================= */
 
 :root {
-  /* Core Canvas & Surfaces - Pure White & Professional Light Slate */
-  --bg-canvas: #f4f6f9;
+  /* Core Light Palette - Crisp Whitish Enterprise Standard */
+  --bg-canvas: #f6f8fb;
   --bg-surface: #ffffff;
-  --bg-surface-elevated: #f8fafc;
-  --bg-surface-subtle: #f1f5f9;
+  --bg-surface-elevated: #ffffff;
+  --bg-surface-subtle: #f8fafc;
   --bg-surface-hover: #f1f5f9;
   --bg-subtle: #f8fafc;
 
-  /* Borders - Refined Hairlines (Excel/Office standard) */
+  /* Refined Hairline Borders (tsugu.life / imbesideyou style) */
   --border-subtle: #e2e8f0;
   --border-muted: #cbd5e1;
   --border-strong: #94a3b8;
   --border-focus: #005a9e;
 
-  /* High-Contrast Corporate Typography */
+  /* Typography Colors - High Contrast */
   --text-primary: #0f172a;
   --text-secondary: #334155;
   --text-muted: #64748b;
   --text-disabled: #94a3b8;
 
-  /* Brand / Primary Accent - Classic Corporate Windows/Office Navy */
+  /* Brand / Primary Accent - Corporate Deep Navy & Cyan Highlights */
   --brand-primary: #005a9e;
   --brand-hover: #004578;
   --brand-active: #003865;
@@ -33,7 +33,7 @@
   --brand-subtle: #eff6ff;
   --brand-border: #bfdbfe;
 
-  /* Institutional Status Indicators (Muted Compliance Standard) */
+  /* Institutional Compliance Status Badges */
   --success: #166534;
   --success-bg: #ecfdf5;
   --success-border: #a7f3d0;
@@ -56,29 +56,29 @@
 
   /* Typography Stack */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: 'JetBrains Mono', Consolas, 'Segoe UI Mono', 'Courier New', monospace;
+  --font-mono: 'JetBrains Mono', Consolas, 'SF Mono', monospace;
 
-  /* Subtle Crisp Elevation */
+  /* Elevation & Shadows */
   --radius-xs: 2px;
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 8px;
-  --shadow-subtle: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
-  --shadow-elevated: 0 4px 16px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+  --shadow-subtle: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  --shadow-elevated: 0 8px 24px -4px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
 }
 
-/* Optional Dark Theme Fallback */
+/* Dark Mode Theme - Obsidian & Sleek Slate Standard */
 [data-theme="dark"] {
-  --bg-canvas: #090d16;
-  --bg-surface: #0f172a;
+  --bg-canvas: #0a0e17;
+  --bg-surface: #111827;
   --bg-surface-elevated: #162035;
   --bg-surface-subtle: #1e293b;
-  --bg-surface-hover: #1e293b;
+  --bg-surface-hover: #1f293d;
   --bg-subtle: rgba(255, 255, 255, 0.03);
 
   --border-subtle: #1e293b;
-  --border-muted: #27354f;
+  --border-muted: #2e3d56;
   --border-strong: #475569;
   --border-focus: #3b82f6;
 
@@ -91,35 +91,35 @@
   --brand-hover: #1d4ed8;
   --brand-active: #1e40af;
   --brand-accent: #38bdf8;
-  --brand-subtle: rgba(37, 99, 235, 0.12);
+  --brand-subtle: rgba(37, 99, 235, 0.14);
   --brand-border: #1d4ed8;
 
   --success: #10b981;
-  --success-bg: rgba(16, 185, 129, 0.10);
-  --success-border: rgba(16, 185, 129, 0.25);
+  --success-bg: rgba(16, 185, 129, 0.12);
+  --success-border: rgba(16, 185, 129, 0.28);
   --success-text: #34d399;
 
   --warning: #f59e0b;
-  --warning-bg: rgba(245, 158, 11, 0.10);
-  --warning-border: rgba(245, 158, 11, 0.25);
+  --warning-bg: rgba(245, 158, 11, 0.12);
+  --warning-border: rgba(245, 158, 11, 0.28);
   --warning-text: #fbbf24;
 
   --danger: #ef4444;
-  --danger-bg: rgba(239, 68, 68, 0.10);
-  --danger-border: rgba(239, 68, 68, 0.25);
+  --danger-bg: rgba(239, 68, 68, 0.12);
+  --danger-border: rgba(239, 68, 68, 0.28);
   --danger-text: #f87171;
 
   --info: #6366f1;
-  --info-bg: rgba(99, 102, 241, 0.10);
-  --info-border: rgba(99, 102, 241, 0.25);
+  --info-bg: rgba(99, 102, 241, 0.12);
+  --info-border: rgba(99, 102, 241, 0.28);
   --info-text: #818cf8;
 
   --shadow-subtle: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(0, 0, 0, 0.2);
   --shadow-elevated: 0 12px 36px rgba(0, 0, 0, 0.45);
 }
 
-/* Base Document Reset */
+/* Base Reset */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -136,9 +136,22 @@ body {
   flex-direction: column;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Top Institutional Header Bar */
+/* Eyebrow Tag inspired by imbesideyou.com */
+.eyebrow {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brand-accent);
+  margin-bottom: 3px;
+}
+
+/* Top Navigation Header */
 .app-header {
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border-subtle);
@@ -150,6 +163,7 @@ body {
   top: 0;
   z-index: 100;
   box-shadow: var(--shadow-subtle);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .header-left {
@@ -158,16 +172,28 @@ body {
   gap: 16px;
 }
 
-.brand-badge {
-  background: var(--brand-subtle);
-  border: 1px solid var(--brand-border);
-  color: var(--brand-primary);
-  padding: 4px 8px;
-  border-radius: var(--radius-sm);
+/* Brand Identity inspired by imbesideyou.com */
+.brand-logo-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-logo {
+  font-size: 1.12rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.brand-logo small {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--brand-accent);
   font-weight: 700;
-  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
@@ -177,7 +203,7 @@ body {
 }
 
 .header-title {
-  font-size: 1.05rem;
+  font-size: 1.02rem;
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.01em;
@@ -191,10 +217,10 @@ body {
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
-/* Institutional Status Indicator */
+/* Institutional Status Indicator Pill */
 .status-indicator-pill {
   display: inline-flex;
   align-items: center;
@@ -216,7 +242,7 @@ body {
   background-color: var(--success);
 }
 
-/* Metric KPI Strip */
+/* Metric KPI Strip (imbesideyou stat block pattern) */
 .kpi-strip {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -229,9 +255,9 @@ body {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: 14px 18px;
+  padding: 16px 20px;
   box-shadow: var(--shadow-card);
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, transform 0.15s ease, background-color 0.2s ease;
 }
 
 .kpi-card:hover {
@@ -241,7 +267,7 @@ body {
 .kpi-label {
   font-size: 0.72rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   color: var(--text-muted);
   font-weight: 600;
   margin-bottom: 4px;
@@ -249,7 +275,7 @@ body {
 
 .kpi-value {
   font-family: var(--font-mono);
-  font-size: 1.55rem;
+  font-size: 1.6rem;
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.02em;
@@ -259,24 +285,25 @@ body {
 .kpi-sub {
   font-size: 0.72rem;
   color: var(--text-muted);
-  margin-top: 2px;
+  margin-top: 3px;
 }
 
-/* Navigation Segment Bar (MS Office Ribbon / Excel Tab Style) */
+/* Navigation Segment Bar (MS Office Ribbon / clean tabs) */
 .nav-bar {
   display: flex;
-  gap: 0;
+  gap: 2px;
   padding: 0 32px;
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border-subtle);
   overflow-x: auto;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .nav-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 16px;
+  padding: 11px 18px;
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
@@ -296,7 +323,7 @@ body {
 .nav-btn.active {
   color: var(--brand-primary);
   border-bottom-color: var(--brand-primary);
-  background: #ffffff;
+  background: var(--bg-surface);
   font-weight: 700;
 }
 
@@ -310,7 +337,7 @@ body {
   stroke-linejoin: round;
 }
 
-/* Main Content Workspace */
+/* Main Workspace */
 .main-container {
   flex: 1;
   padding: 20px 32px;
@@ -332,9 +359,10 @@ body {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: 20px;
+  padding: 22px;
   box-shadow: var(--shadow-card);
-  margin-bottom: 20px;
+  margin-bottom: 22px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .card-header-bar {
@@ -343,7 +371,7 @@ body {
   align-items: center;
   flex-wrap: wrap;
   gap: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .card-title-group {
@@ -353,7 +381,7 @@ body {
 }
 
 .card-heading {
-  font-size: 1rem;
+  font-size: 1.02rem;
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.01em;
@@ -369,9 +397,9 @@ body {
 .dropzone-container {
   border: 1.5px dashed var(--border-strong);
   border-radius: var(--radius-md);
-  padding: 30px 20px;
+  padding: 32px 20px;
   text-align: center;
-  background: #ffffff;
+  background: var(--bg-surface);
   transition: border-color 0.15s ease, background-color 0.15s ease;
   cursor: pointer;
 }
@@ -382,11 +410,11 @@ body {
 }
 
 .dropzone-icon-box {
-  width: 40px;
-  height: 40px;
-  margin: 0 auto 10px auto;
+  width: 42px;
+  height: 42px;
+  margin: 0 auto 12px auto;
   border-radius: var(--radius-sm);
-  background: var(--bg-surface-elevated);
+  background: var(--bg-surface-subtle);
   border: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
@@ -395,7 +423,7 @@ body {
 }
 
 .dropzone-title {
-  font-size: 0.92rem;
+  font-size: 0.94rem;
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 3px;
@@ -406,7 +434,7 @@ body {
   color: var(--text-muted);
 }
 
-/* Control Elements: Search, Filter, Buttons */
+/* Controls Toolbar */
 .controls-toolbar {
   display: flex;
   gap: 8px;
@@ -415,7 +443,7 @@ body {
 }
 
 .search-input {
-  background: #ffffff;
+  background: var(--bg-surface);
   border: 1px solid var(--border-muted);
   color: var(--text-primary);
   padding: 7px 12px;
@@ -428,11 +456,11 @@ body {
 
 .search-input:focus {
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 2px rgba(0, 90, 158, 0.12);
+  box-shadow: 0 0 0 2px rgba(0, 90, 158, 0.14);
 }
 
 .select-filter {
-  background: #ffffff;
+  background: var(--bg-surface);
   border: 1px solid var(--border-muted);
   color: var(--text-primary);
   padding: 7px 12px;
@@ -444,9 +472,10 @@ body {
 
 .select-filter:focus {
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 2px rgba(0, 90, 158, 0.12);
+  box-shadow: 0 0 0 2px rgba(0, 90, 158, 0.14);
 }
 
+/* Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -477,7 +506,7 @@ body {
 }
 
 .btn-secondary {
-  background: #ffffff;
+  background: var(--bg-surface);
   border-color: var(--border-muted);
   color: var(--text-primary);
 }
@@ -488,7 +517,7 @@ body {
 }
 
 .btn-danger {
-  background: #ffffff;
+  background: var(--bg-surface);
   border-color: var(--danger-border);
   color: var(--danger-text);
 }
@@ -499,7 +528,7 @@ body {
 
 .btn-icon {
   padding: 7px;
-  background: #ffffff;
+  background: var(--bg-surface);
   border: 1px solid var(--border-muted);
   color: var(--text-secondary);
 }
@@ -510,12 +539,12 @@ body {
   border-color: var(--border-strong);
 }
 
-/* Institutional Enterprise Data Table (Excel/Workplace Style) */
+/* Institutional Enterprise Data Table */
 .table-wrapper {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   overflow-x: auto;
-  background: #ffffff;
+  background: var(--bg-surface);
 }
 
 .enterprise-table {
@@ -545,15 +574,15 @@ body {
 }
 
 .enterprise-table tbody tr {
-  background-color: #ffffff;
+  background-color: var(--bg-surface);
 }
 
 .enterprise-table tbody tr:nth-child(even) {
-  background-color: #fafbfc;
+  background-color: var(--bg-surface-subtle);
 }
 
 .enterprise-table tbody tr:hover {
-  background-color: #f1f5f9;
+  background-color: var(--bg-surface-hover);
 }
 
 .num-cell {
@@ -562,7 +591,7 @@ body {
   font-feature-settings: "tnum" 1;
 }
 
-/* Status Badges - Clean Workplace Style */
+/* Compliance Status Badges */
 .status-pill {
   display: inline-flex;
   align-items: center;
@@ -619,8 +648,8 @@ body {
 }
 
 .action-chip.review:hover {
-  background: #fde68a;
-  color: #713f12;
+  background: var(--warning-text);
+  color: #ffffff;
 }
 
 /* Modal Windows */
@@ -640,7 +669,7 @@ body {
 }
 
 .modal-window {
-  background: #ffffff;
+  background: var(--bg-surface);
   border: 1px solid var(--border-muted);
   border-radius: var(--radius-md);
   width: 100%;
@@ -685,7 +714,7 @@ body {
   bottom: 0;
   width: 440px;
   max-width: 90vw;
-  background: #ffffff;
+  background: var(--bg-surface);
   border-left: 1px solid var(--border-muted);
   box-shadow: var(--shadow-elevated);
   z-index: 200;
@@ -715,7 +744,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: #fafbfc;
+  background: var(--bg-canvas);
 }
 
 .copilot-bubble {
@@ -726,7 +755,7 @@ body {
 }
 
 .copilot-bubble.assistant {
-  background: #ffffff;
+  background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   color: var(--text-primary);
   box-shadow: var(--shadow-subtle);
@@ -744,7 +773,7 @@ body {
   border-top: 1px solid var(--border-subtle);
   display: flex;
   gap: 8px;
-  background: #ffffff;
+  background: var(--bg-surface);
 }
 
 /* Toast Notifications */
@@ -760,7 +789,7 @@ body {
 
 .toast-message {
   padding: 10px 16px;
-  background: #ffffff;
+  background: var(--bg-surface);
   border: 1px solid var(--border-muted);
   color: var(--text-primary);
   font-size: 0.8rem;

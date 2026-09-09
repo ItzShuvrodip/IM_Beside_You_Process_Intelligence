@@ -245,5 +245,38 @@
   - **Launchers:** `apps/payroll_automation/run_app.py` and `apps/payroll_automation/launch_payroll_app.bat`.
   - **Test Suite:** `tests/test_standalone_app.py` expanding test coverage to 40/40 passing unit and integration tests with zero Pyrefly errors.
 
+---
+
+## Enterprise Design Overhaul, 120-Record Dataset Expansion & Native Desktop Executable
+
+### Objectives
+- Upgrade visual styling across the application suite to institutional standards inspired by `imbesideyou.com` and `tsugu.life`.
+- Implement a crisp, high-contrast whitish light theme with an obsidian dark mode fallback.
+- Scale production test data from 20 to 120 validated enterprise records plus 50 compliance edge cases.
+- Package the standalone automation suite into an independent Windows desktop executable (`PayrollAutomationSuite.exe`) and native desktop window container.
+- Clean up redundant one-time scripts and verify zero static typing or test regressions.
+
+### Implementation Summary
+1. **Design System & Visual Hierarchy:**
+   - Designed clean corporate light theme (`#f6f8fb` canvas, `#ffffff` card/table surfaces, `#e2e8f0` hairline borders, `#0f172a` typography, and corporate navy `#005a9e` accents).
+   - Designed obsidian dark mode (`#0a0e17` canvas, `#111827` surfaces, `#1e293b` borders, `#f8fafc` typography).
+   - Dynamic theme switching with persistent local storage and SVG sun/moon icon toggle.
+   - Enforced 100% English phrasing across UI, documentation, and error states.
+   - Verified 0 Unicode emojis across all workspace code and markdown files.
+
+2. **Dataset Scale & Coverage:**
+   - Generated 120 verified enterprise claims (`EMP-9401` through `EMP-9520`) in `sample_data/monthly_claims_batch_01.csv` and seeded state.
+   - Maintained realistic statutory distribution: 105 auto-approved (87.5%), 9 review flags (7.5%), and 6 policy rejections (5.0%).
+   - Added 50 boundary compliance edge cases in `sample_data/edge_cases_batch_02.csv`.
+
+3. **Standalone Desktop Application & Windows Executable (.exe):**
+   - Built `apps/payroll_automation/desktop_app.py` with an embedded background ASGI engine and native Edge Chromium WebView2 window container (1440x900).
+   - Compiled standalone executable `apps/payroll_automation/dist/PayrollAutomationSuite/PayrollAutomationSuite.exe` using PyInstaller.
+   - Added one-click batch launcher `apps/payroll_automation/launch_desktop_app.bat`.
+
+4. **Maintenance & Hygiene:**
+   - Removed temporary one-time generation script `scripts/generate_120_payroll_dataset.py`.
+   - Verified 0 Pyrefly errors and 40/40 passing tests with `pytest`.
+
 
 

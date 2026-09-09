@@ -1021,10 +1021,10 @@ def generate_dashboard_html(output_path: Path):
     <!-- Header Navigation -->
     <header class="app-header">
         <div class="brand-container">
-            <div class="brand-monogram">IMBY</div>
             <div class="brand-meta">
-                <h1>PROCESS INTELLIGENCE PLATFORM</h1>
-                <p>Telemetry Mining & Deterministic Decision Engine</p>
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: var(--accent-blue); text-transform: uppercase;">I'mbesideyou · AI-Powered Organizational OS</span>
+                <h1 style="font-size: 17px; font-weight: 800; letter-spacing: -0.02em; color: var(--text-title); margin: 2px 0;">ProcMine Process Intelligence Platform</h1>
+                <p style="font-size: 11px; color: var(--text-secondary); margin: 0;">Telemetry Mining · Sequence Neural Architecture · Deterministic Decision Suite</p>
             </div>
             <div class="system-pill">
                 <span class="pulse-indicator"></span>
