@@ -15,12 +15,20 @@ class MockHRSystemAdapter:
     def __init__(self):
         # Known registered employee database simulation
         self._employee_registry = {
-            "EMP-9401": {"name": "Minoru Fujita", "contract": "regular", "department": "Operations"},
-            "EMP-9402": {"name": "Kenichi Sato", "contract": "outsourcing", "department": "IT Support"},
-            "EMP-9403": {"name": "Yuka Tanaka", "contract": "regular", "department": "Finance"},
-            "EMP-9404": {"name": "Daisuke Suzuki", "contract": "contract", "department": "Logistics"},
-            "EMP-9405": {"name": "Ichiro Watanabe", "contract": "outsourcing", "department": "Facilities"}
+            "EMP-9401": {"name": "Employee 01", "contract": "regular", "department": "Operations"},
+            "EMP-9402": {"name": "Employee 02", "contract": "outsourcing", "department": "IT Support"},
+            "EMP-9403": {"name": "Employee 03", "contract": "regular", "department": "Finance"},
+            "EMP-9404": {"name": "Employee 04", "contract": "contract", "department": "Logistics"},
+            "EMP-9405": {"name": "Employee 05", "contract": "outsourcing", "department": "Facilities"}
         }
+        # Extend registry for all 20 standard demo employees
+        for i in range(6, 21):
+            emp_id = f"EMP-94{i:02d}"
+            self._employee_registry[emp_id] = {
+                "name": f"Employee {i:02d}",
+                "contract": "regular" if i % 2 == 0 else ("contract" if i % 3 == 0 else "outsourcing"),
+                "department": ["Operations", "IT Support", "Finance", "Logistics", "Facilities"][i % 5]
+            }
         self.staged_commits: List[Dict[str, Any]] = []
 
     def verify_employee(self, employee_id: str) -> Optional[Dict[str, Any]]:

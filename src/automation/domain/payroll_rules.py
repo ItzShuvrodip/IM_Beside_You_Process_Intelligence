@@ -180,7 +180,7 @@ BATCH_CASES = [
     {
         "case_id": "PI-PROD-2026-001",
         "employee_id": "EMP-9401",
-        "employee_name": "Minoru Fujita",
+        "employee_name": "Employee 01",
         "contract_type": "regular",
         "base_salary": 380000,
         "claimed_commute": 18500,
@@ -192,7 +192,7 @@ BATCH_CASES = [
     {
         "case_id": "PI-PROD-2026-002",
         "employee_id": "EMP-9402",
-        "employee_name": "Kenichi Sato",
+        "employee_name": "Employee 02",
         "contract_type": "outsourcing",
         "base_salary": 450000,
         "claimed_commute": 22000,
@@ -204,7 +204,7 @@ BATCH_CASES = [
     {
         "case_id": "PI-PROD-2026-003",
         "employee_id": "EMP-9403",
-        "employee_name": "Yuka Tanaka",
+        "employee_name": "Employee 03",
         "contract_type": "regular",
         "base_salary": 320000,
         "claimed_commute": 165000,
@@ -216,7 +216,7 @@ BATCH_CASES = [
     {
         "case_id": "PI-PROD-2026-004",
         "employee_id": "EMP-9404",
-        "employee_name": "Daisuke Suzuki",
+        "employee_name": "Employee 04",
         "contract_type": "contract",
         "base_salary": 280000,
         "claimed_commute": 12000,
@@ -228,7 +228,7 @@ BATCH_CASES = [
     {
         "case_id": "PI-PROD-2026-005",
         "employee_id": "EMP-9405",
-        "employee_name": "Ichiro Watanabe",
+        "employee_name": "Employee 05",
         "contract_type": "outsourcing",
         "base_salary": 420000,
         "claimed_commute": 14000,

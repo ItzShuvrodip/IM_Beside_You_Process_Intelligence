@@ -19,7 +19,7 @@ class TestPayrollAutomationEngine(unittest.TestCase):
         valid_item = {
             "case_id": "TEST-01",
             "employee_id": "E101",
-            "employee_name": "Taro Yamada",
+            "employee_name": "Employee 01",
             "contract_type": "regular",
             "base_salary": 300000,
             "claimed_commute": 15000,
@@ -41,7 +41,7 @@ class TestPayrollAutomationEngine(unittest.TestCase):
         ineligible_item = {
             "case_id": "TEST-02",
             "employee_id": "E102",
-            "employee_name": "Jiro Suzuki",
+            "employee_name": "Employee 02",
             "contract_type": "outsourcing",
             "base_salary": 400000,
             "claimed_commute": 10000,
@@ -58,7 +58,7 @@ class TestPayrollAutomationEngine(unittest.TestCase):
         flagged_item = {
             "case_id": "TEST-03",
             "employee_id": "E103",
-            "employee_name": "Hanako Tanaka",
+            "employee_name": "Employee 03",
             "contract_type": "regular",
             "base_salary": 200000,
             "claimed_commute": 10000,
@@ -73,9 +73,9 @@ class TestPayrollAutomationEngine(unittest.TestCase):
 
     def test_batch_summary_statistics(self):
         batch = [
-            {"employee_id": "E1", "employee_name": "A", "contract_type": "regular", "base_salary": 300000},
-            {"employee_id": "E2", "employee_name": "B", "contract_type": "outsourcing", "base_salary": 400000, "claimed_housing": 10000},
-            {"employee_id": "E3", "employee_name": "C", "contract_type": "regular", "base_salary": 200000, "custom_deduction": 60000}
+            {"employee_id": "E1", "employee_name": "Employee 01", "contract_type": "regular", "base_salary": 300000},
+            {"employee_id": "E2", "employee_name": "Employee 02", "contract_type": "outsourcing", "base_salary": 400000, "claimed_housing": 10000},
+            {"employee_id": "E3", "employee_name": "Employee 03", "contract_type": "regular", "base_salary": 200000, "custom_deduction": 60000}
         ]
         results = self.engine.process_batch(batch)
         self.assertEqual(len(results), 3)

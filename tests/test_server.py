@@ -65,7 +65,7 @@ class TestAutomationServerAPI(unittest.TestCase):
         claim = {
             "case_id": "TEST-CLAIM-001",
             "employee_id": "EMP-8801",
-            "employee_name": "Test Employee One",
+            "employee_name": "Employee 01",
             "contract_type": "regular",
             "base_salary": 320000,
             "claimed_commute": 12000,
@@ -89,7 +89,7 @@ class TestAutomationServerAPI(unittest.TestCase):
         claim = {
             "case_id": "TEST-CLAIM-002",
             "employee_id": "EMP-8802",
-            "employee_name": "Test Employee Two",
+            "employee_name": "Employee 02",
             "contract_type": "contract",
             "base_salary": 280000,
             "claimed_commute": 12000,
@@ -110,7 +110,7 @@ class TestAutomationServerAPI(unittest.TestCase):
         claim = {
             "case_id": "TEST-OVERRIDE-003",
             "employee_id": "EMP-8803",
-            "employee_name": "Test Employee Three",
+            "employee_name": "Employee 03",
             "contract_type": "contract",
             "base_salary": 300000,
             "claimed_commute": 18000,

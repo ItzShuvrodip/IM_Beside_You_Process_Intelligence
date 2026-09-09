@@ -80,8 +80,8 @@ def get_cached_segments() -> List[Dict[str, Any]]:
 
 class PayrollClaimInput(BaseModel):
     case_id: Optional[str] = None
-    employee_id: str = Field(..., json_schema_extra={"example": "EMP-9501"})
-    employee_name: str = Field(..., json_schema_extra={"example": "Kenji Takahashi"})
+    employee_id: str = Field(..., json_schema_extra={"example": "EMP-9401"})
+    employee_name: str = Field(..., json_schema_extra={"example": "Employee 01"})
     contract_type: str = Field(..., json_schema_extra={"example": "regular"})
     base_salary: int = Field(..., json_schema_extra={"example": 350000})
     claimed_commute: int = Field(0, json_schema_extra={"example": 16000})

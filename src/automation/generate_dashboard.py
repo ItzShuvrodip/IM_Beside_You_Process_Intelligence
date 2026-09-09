@@ -1446,11 +1446,11 @@ def generate_dashboard_html(output_path: Path):
                 <div class="form-grid">
                     <div class="form-row">
                         <label>Employee Name</label>
-                        <input type="text" id="form-name" required value="Sora Morimoto">
+                        <input type="text" id="form-name" required value="Employee 21">
                     </div>
                     <div class="form-row">
                         <label>Employee ID</label>
-                        <input type="text" id="form-id" required value="EMP-9650">
+                        <input type="text" id="form-id" required value="EMP-9421">
                     </div>
 
                     <div class="form-row">

@@ -147,7 +147,7 @@ class TestEvidenceIntegrity(unittest.TestCase):
 
         valid_case = {
             "employee_id": "EMP-9401",
-            "employee_name": "Minoru Fujita",
+            "employee_name": "Employee 01",
             "contract_type": "regular",
             "base_salary": 380000,
             "claimed_commute": 18500,
