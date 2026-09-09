@@ -190,7 +190,7 @@
 - Expanded automated test suite with `tests/test_ml_model.py`, verifying neural sequence shapes, hash tokenization, and probability constraints (31 unit tests passing with 100% pass rate).
 
 ### Final Deliverables Summary
-1. `deliverables/segments.jsonl` (183 validated segments from Dataset B, mean confidence 0.84).
+1. `deliverables/segments.jsonl` (179 validated segments from Dataset B, mean confidence 0.84).
 2. `deliverables/automation_dashboard.html` (Process Intelligence Platform with Executive Cockpit, DFG graph, ROI simulator, and sequence telemetry).
 3. `apps/payroll_automation/` (Standalone Enterprise Payroll Automation Suite on port 8500, with batch processing, AI Copilot, exception desk, and desktop launchers).
 4. `models/multimodal_process_net.pt` & `models/boundary_bilstm_best.pt` (trained PyTorch Multimodal BiLSTM sequence checkpoints, 530k parameters).
@@ -277,6 +277,45 @@
 4. **Maintenance & Hygiene:**
    - Removed temporary one-time generation script `scripts/generate_120_payroll_dataset.py`.
    - Verified 0 Pyrefly errors and 40/40 passing tests with `pytest`.
+
+---
+
+## Bilingual Internationalization (EN / JA), Real-Time DOM Hydration & Port Collision Resilience
+
+### Objectives
+- Provide seamless, professional bilingual support (English and Japanese) across all enterprise deliverables to accommodate both multinational executive leadership and local Japanese labor compliance inspectors.
+- Implement real-time language toggles with zero page reloads, instantaneous DOM hydration, and client-side preference persistence via `localStorage`.
+- Implement robust port conflict handling in `apps/payroll_automation/run_app.py` to prevent server collisions when native desktop instances or background processes are active.
+- Ensure strict zero-emoji compliance and maintain an institutional corporate aesthetic across all codebases and documentation.
+- Formally document the structured utilization of Generative AI throughout the 7-day engineering effort per task guidelines.
+
+### Implementation Summary
+1. **Bilingual Internationalization Engine:**
+   - Added interactive `.lang-switch` segmented button controls to both the Process Intelligence Dashboard (`deliverables/automation_dashboard.html`) and the Standalone Payroll Automation Suite (`apps/payroll_automation/frontend/`).
+   - Mapped English and statutory Japanese terminology for:
+     - Navigation headers, KPI metrics, tab titles, and modal headers.
+     - Contract types: Regular (`正社員`), Contract (`契約社員`), Outsourcing (`業務委託`), Part-time (`パート・アルバイト`).
+     - Processing status badges: Auto-Approved (`自動承認済`), Flagged for Review (`要確認・レビュー`), Policy Rejected (`規程違反却下`), Supervisor Approved (`管理者承認済`).
+     - Empty states, toast notifications, simulation result summaries, and Copilot prompts.
+   - Built a deterministic i18n translation dictionary in `apps/payroll_automation/frontend/app.js` and `src/automation/generate_dashboard.py` with automatic recursive attribute binding (`data-i18n`, `data-i18n-placeholder`, `data-i18n-title`).
+   - Synchronized persistent language preference (`localStorage.getItem('imby_lang')` and `localStorage.getItem('imby_dash_lang')`).
+
+2. **Socket Conflict Protection & Dynamic Port Binding:**
+   - Hardened `apps/payroll_automation/run_app.py` with an automated socket probe (`is_port_in_use`).
+   - When port 8500 is already occupied (e.g. by `desktop_app.py` or another active terminal), the launcher automatically detects the running service, verifies HTTP health, and launches the browser to the existing endpoint without throwing `WinError 10048` or crashing.
+   - If port 8500 is occupied by an unresponsive process, the script discovers the next available free port (8501+) and launches cleanly.
+
+3. **Strict Zero-Emoji & Institutional Styling Verification:**
+   - Conducted an automated repository-wide regex scan for Unicode emoji ranges (`[\u{1F300}-\u{1F9FF}]`, `[\u{2600}-\u{26FF}]`, `[\u{2700}-\u{27BF}]`).
+   - Confirmed 0 emojis present in all Python source files, JavaScript, CSS, HTML, and Markdown documentation.
+   - Reinforced institutional corporate palette (`#f6f8fb` / `#ffffff` with `#005a9e` corporate blue) matching modern enterprise back-office platforms.
+
+4. **Generative AI Usage Disclosure:**
+   - In accordance with task instructions, Generative AI (Google Antigravity coding assistant) was utilized strategically across the 7-day sprint:
+     - **Exploratory Log Parsing & Japanese Schema Translation:** Assisting in interpreting Japanese UI labels from DOM strings (`#/payroll-items`, `btn-pi-ok`, `gyomu_itaku_kyuuyo_kitei.docx`, `kazei_tsukin_teate`).
+     - **CSS Token Scaffolding:** Drafting institutional CSS utility classes, light/dark theme variables, and responsive layout grids.
+     - **Drafting Edge Case Fixtures:** Synthesizing realistic HR edge case scenarios for `sample_data/edge_cases_batch_02.csv`.
+     - **Strict Governance:** All mathematical ROI models, neural sequence architectures (`MultimodalProcessNet`), loss formulations, dynamic programming alignments, unit tests, and statutory decision rules were deterministically formulated, hand-verified, and validated against empirical ground truth.
 
 
 

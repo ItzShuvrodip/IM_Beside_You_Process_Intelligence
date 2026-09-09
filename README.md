@@ -26,7 +26,7 @@ IMBY/ (Repository Root)
 │   ├── boundary_bilstm_best.pt   # Benchmark compatibility sequence checkpoint
 │   └── visual_cache.pt           # GPU MobileNetV3 visual screenshot feature cache
 ├── deliverables/
-│   ├── segments.jsonl        # Step 1 Output: 183 validated work unit segments for Dataset B
+│   ├── segments.jsonl        # Step 1 Output: 179 validated work unit segments for Dataset B
 │   ├── audit_trail.jsonl     # Tamper-evident cryptographic transaction ledger
 │   └── automation_dashboard.html # Step 2 Intelligence & Executive Cockpit Dashboard
 ├── notebooks/
@@ -121,7 +121,9 @@ Enterprise capabilities:
 - **Human-in-the-Loop Exception Triage:** Discretionary review desk with comparative mathematical breakdowns and supervisor override digital signatures.
 - **Pre-flight HRIS & ERP Commit Hub:** Pre-commit buffer for SAP, Oracle, Workday, and Freee API pipelines.
 - **Tamper-Evident SHA-256 Cryptographic Audit Ledger:** Immutable audit trail with cryptographic hash verification.
-- **Dynamic Light & Dark Themes:** High-contrast whitish corporate light theme and sleek obsidian dark mode.
+- **Bilingual Interface (English / Japanese):** Real-time language toggle (`EN` / `JA`) across all interfaces with authentic Japanese statutory terminology (`要確認・レビュー`, `規程違反却下`, `正社員`, `契約社員`, `業務委託`).
+- **Port Collision Resilience:** Intelligent port discovery and socket protection in `run_app.py`, gracefully reusing existing instances or discovering available alternate ports.
+- **Dynamic Light & Dark Themes:** High-contrast whitish corporate light theme (MS Excel / SAP enterprise aesthetic) and sleek obsidian dark mode.
 
 ---
 
@@ -157,7 +159,7 @@ python scripts/train_multimodal_model.py
 ```bash
 python scripts/run_segmentation.py
 ```
-*Processes all 15 production sessions in Dataset B, outputs 183 validated work unit segments to `deliverables/segments.jsonl` (mean confidence: 0.84), and validates schema compliance.*
+*Processes all 15 production sessions in Dataset B, outputs 179 validated work unit segments to `deliverables/segments.jsonl` (mean confidence: 0.84), and validates schema compliance.*
 
 ---
 
@@ -188,7 +190,7 @@ Located in the `notebooks/` directory:
 ## 3. Summary of Operational Findings
 
 - **Selected Automation Target:** `payroll_deduction_adjustment` (Payroll Items & Deduction Adjustments).
-- **Workload Concentration:** Represents **48.1% of total active operational time** in Dataset B (58.7 minutes across 46 work units; mean signal confidence: **0.89**).
+- **Workload Concentration:** Represents **48.3% of total active operational time** in Dataset B (59.5 minutes across 46 work units; mean signal confidence: **0.89**).
 - **Dwell Attribution Analysis:** Segment-joined telemetry isolates **14.8 minutes** of active Microsoft Word dwell reviewing `gyomu_itaku_kyuuyo_kitei.docx` (contractor compensation guidelines) inside payroll intervals, confirming a substantial manual cognitive lookup bottleneck.
 - **Financial Business Case (Base Target Scenario):** At an enterprise loaded labor rate of ¥3,500/hr, initial development cost of ¥1.4M, and annual maintenance of ¥140K/yr, automating payroll verification yields **25.2 months payback** and **+42.7% net three-year ROI** based on an annual volume of 9,600 cases.
 - **System Delivery:** Separated into two distinct operational artifacts:
