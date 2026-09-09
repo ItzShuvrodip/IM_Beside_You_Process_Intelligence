@@ -99,6 +99,10 @@
       <svg class="nav-icon" viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
       <span data-i18n="nav_sandbox">Interactive Claim Simulator</span>
     </button>
+    <button class="nav-btn" data-target="view-policy">
+      <svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+      <span data-i18n="nav_policy">Policy Governance Studio</span>
+    </button>
   </nav>
 
   <!-- Main Container -->
@@ -223,21 +227,73 @@
       </div>
     </div>
 
-    <!-- VIEW 3: HRIS & ERP COMMIT HUB -->
+    <!-- VIEW 3: MULTI-ERP CONNECTOR & STAGING HUB -->
     <div id="view-staging" class="view-panel">
       <div class="enterprise-card">
         <div class="card-header-bar">
           <div class="card-title-group">
-            <h2 class="card-heading" data-i18n="staging_title">HRIS & ERP Pre-Flight Staging Buffer</h2>
+            <h2 class="card-heading" data-i18n="staging_title">Multi-ERP Pre-Flight Staging & Integration Hub</h2>
           </div>
-          <button id="btn-commit-staging" class="btn btn-primary">
-            <svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-            <span data-i18n="btn_commit_staging">Commit Staged Payloads to ERP</span>
-          </button>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button id="btn-preflight-erp" class="btn btn-secondary">
+              <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              <span data-i18n="btn_preflight_erp">Pre-Flight Dry Run</span>
+            </button>
+            <button id="btn-commit-staging" class="btn btn-primary">
+              <svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              <span data-i18n="btn_commit_staging">Commit Staged Payloads to ERP</span>
+            </button>
+          </div>
         </div>
         <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 0.85rem;" data-i18n="staging_desc">
-          Pre-flight staging zone for SAP, Oracle, Workday, and Freee payroll APIs. Only records with verified statutory compliance (<span class="status-pill status-approved">AUTO_APPROVED</span> or <span class="status-pill status-supervisor">SUPERVISOR_OVERRIDE_APPROVED</span>) are queued for downstream batch synchronization.
+          Pre-flight validation hub for SAP S/4HANA OData v4, Workday HCM Inbound EIB, and Freee HR Cloud APIs. Only records with verified statutory compliance (<span class="status-pill status-approved">AUTO_APPROVED</span> or <span class="status-pill status-supervisor">SUPERVISOR_OVERRIDE_APPROVED</span>) are queued for downstream batch synchronization with cryptographic idempotency tokens.
         </p>
+
+        <!-- Pre-Flight Diagnostics Strip -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px;">
+          <div class="kpi-card" style="padding: 12px 16px;">
+            <div class="kpi-label" data-i18n="lbl_erp_staged_count">Queued ERP Records</div>
+            <div id="erp-staged-count" class="kpi-value" style="font-size: 1.25rem;">0</div>
+            <div class="kpi-sub" data-i18n="sub_erp_staged">Compliance approved</div>
+          </div>
+          <div class="kpi-card" style="padding: 12px 16px;">
+            <div class="kpi-label" data-i18n="lbl_erp_preflight">Pre-Flight Health</div>
+            <div id="erp-preflight-badge" style="margin-top: 4px;"><span class="status-pill status-approved">READY_FOR_SYNC</span></div>
+            <div class="kpi-sub" data-i18n="sub_erp_preflight">120 employee roster verified</div>
+          </div>
+          <div class="kpi-card" style="padding: 12px 16px;">
+            <div class="kpi-label" data-i18n="lbl_erp_schema">Schema Verification</div>
+            <div class="kpi-value" style="font-size: 1.25rem; color: var(--success-text);">100% PASS</div>
+            <div class="kpi-sub" data-i18n="sub_erp_schema">No contract mismatches</div>
+          </div>
+          <div class="kpi-card" style="padding: 12px 16px;">
+            <div class="kpi-label" data-i18n="lbl_erp_idempotency">Active Idempotency Token</div>
+            <div id="erp-idempotency-token" style="font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; color: var(--brand-accent); margin-top: 6px;">IDEM-READY</div>
+            <div class="kpi-sub" data-i18n="sub_erp_idempotency">Prevents double disbursement</div>
+          </div>
+        </div>
+
+        <!-- Connector Selector and Payload Visualizer -->
+        <div style="background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);" data-i18n="lbl_target_connector">Target ERP Connector:</span>
+              <div class="segmented-control" style="display: inline-flex; background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 2px;">
+                <button id="tab-connector-sap" class="btn-connector active" data-system="sap" style="padding: 4px 12px; border: none; background: transparent; font-size: 0.78rem; font-weight: 600; cursor: pointer; border-radius: 4px; color: var(--text-primary);">SAP S/4HANA (JSON)</button>
+                <button id="tab-connector-workday" class="btn-connector" data-system="workday" style="padding: 4px 12px; border: none; background: transparent; font-size: 0.78rem; font-weight: 600; cursor: pointer; border-radius: 4px; color: var(--text-secondary);">Workday HCM (EIB)</button>
+                <button id="tab-connector-freee" class="btn-connector" data-system="freee" style="padding: 4px 12px; border: none; background: transparent; font-size: 0.78rem; font-weight: 600; cursor: pointer; border-radius: 4px; color: var(--text-secondary);">Freee HR (Japan CSV)</button>
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button id="btn-download-erp-payload" class="btn btn-secondary" style="font-size: 0.78rem;">
+                <svg class="nav-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                <span id="label-download-erp" data-i18n="btn_download_payload">Download SAP Payload</span>
+              </button>
+            </div>
+          </div>
+          <pre id="erp-payload-preview" style="background: var(--bg-canvas); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 14px; font-family: var(--font-mono); font-size: 0.75rem; max-height: 220px; overflow-y: auto; color: var(--text-primary); margin: 0;">Loading connector payload schema...</pre>
+        </div>
+
         <div class="table-wrapper">
           <table class="enterprise-table">
             <thead>
@@ -379,6 +435,129 @@
             <div style="text-align: center; color: var(--text-muted); padding: 40px;" data-i18n="sim_idle_msg">
               Submit claim inputs on the left to inspect sub-millisecond evaluation results.
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 6: POLICY GOVERNANCE & SCENARIO SIMULATION STUDIO -->
+    <div id="view-policy" class="view-panel">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <!-- Left: Policy Knobs -->
+        <div class="enterprise-card" style="margin-bottom: 0;">
+          <div class="card-header-bar">
+            <h2 class="card-heading" data-i18n="policy_studio_title">Enterprise Policy Governance Studio</h2>
+          </div>
+          <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 0.85rem;" data-i18n="policy_studio_desc">
+            Statutory thresholds and corporate labor rules sandbox. Adjust parameters and simulate budgetary impact and auto-approval shifts across all 120 claims in real time.
+          </p>
+
+          <form id="form-policy-sim" style="display: flex; flex-direction: column; gap: 14px;">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.78rem; font-weight: 600;">
+                <span data-i18n="policy_commute_cap">Commute Tax-Exempt Monthly Cap (JPY)</span>
+                <span id="val-policy-commute" style="color: var(--brand-accent); font-family: var(--font-mono);">¥150,000</span>
+              </div>
+              <input type="range" id="input-policy-commute" min="100000" max="250000" step="5000" value="150000" style="width: 100%;" />
+              <span style="font-size: 0.72rem; color: var(--text-muted);" data-i18n="policy_commute_statutory">Statutory benchmark: National Tax Agency Income Tax Act Art. 21 (¥150,000)</span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.78rem; font-weight: 600;">
+                <span data-i18n="policy_telework_rate">Telework Daily Stipend (JPY)</span>
+                <span id="val-policy-telework-rate" style="color: var(--brand-accent); font-family: var(--font-mono);">¥250</span>
+              </div>
+              <input type="range" id="input-policy-telework-rate" min="100" max="600" step="25" value="250" style="width: 100%;" />
+              <span style="font-size: 0.72rem; color: var(--text-muted);" data-i18n="policy_telework_statutory">Corporate baseline: Telework Handling Guidelines Section 3 (¥250/day)</span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.78rem; font-weight: 600;">
+                <span data-i18n="policy_telework_cap">Telework Monthly Ceiling (JPY)</span>
+                <span id="val-policy-telework-cap" style="color: var(--brand-accent); font-family: var(--font-mono);">¥5,000</span>
+              </div>
+              <input type="range" id="input-policy-telework-cap" min="2000" max="15000" step="500" value="5000" style="width: 100%;" />
+              <span style="font-size: 0.72rem; color: var(--text-muted);" data-i18n="policy_telework_cap_statutory">Corporate maximum allowance ceiling: ¥5,000 / month</span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.78rem; font-weight: 600;">
+                <span data-i18n="policy_deduction_limit">Custom Deduction Warning Ceiling (%)</span>
+                <span id="val-policy-deduction-limit" style="color: var(--brand-accent); font-family: var(--font-mono);">20%</span>
+              </div>
+              <input type="range" id="input-policy-deduction-limit" min="10" max="40" step="1" value="20" style="width: 100%;" />
+              <span style="font-size: 0.72rem; color: var(--text-muted);" data-i18n="policy_deduction_statutory">Labor Standards Act Art. 24 limit: 20% of base salary</span>
+            </div>
+
+            <div style="border-top: 1px solid var(--border-subtle); padding-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+              <span style="font-size: 0.78rem; font-weight: 600;" data-i18n="policy_housing_matrix">Housing Allowance Eligibility Exceptions:</span>
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.78rem; cursor: pointer;">
+                <input type="checkbox" id="check-policy-contract-housing" />
+                <span data-i18n="policy_allow_contract_housing">Allow Housing Subsidy for Contract Personnel (Keiyaku)</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.78rem; cursor: pointer;">
+                <input type="checkbox" id="check-policy-outsourcing-housing" />
+                <span data-i18n="policy_allow_outsourcing_housing">Allow Housing Subsidy for Outsourcing Contractors (Gyomu Itaku)</span>
+              </label>
+            </div>
+
+            <div style="display: flex; gap: 8px; margin-top: 6px;">
+              <button type="button" id="btn-run-policy-sim" class="btn btn-primary" style="flex: 2;">
+                <svg class="nav-icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                <span data-i18n="btn_run_policy_sim">Simulate Policy Impact Across 120 Claims</span>
+              </button>
+              <button type="button" id="btn-reset-policy-sim" class="btn btn-secondary" style="flex: 1;">
+                <span data-i18n="btn_reset_policy">Reset Defaults</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Right: Policy Impact Analytics -->
+        <div class="enterprise-card" style="margin-bottom: 0;">
+          <div class="card-header-bar">
+            <h2 class="card-heading" data-i18n="policy_analytics_title">Real-Time Policy Impact Analysis</h2>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px;">
+            <div class="kpi-card" style="padding: 10px 14px;">
+              <div class="kpi-label" data-i18n="lbl_sim_approval_rate">Simulated Auto-Approval</div>
+              <div id="policy-sim-rate" class="kpi-value" style="font-size: 1.25rem; color: var(--success-text);">87.5%</div>
+              <div id="policy-sim-rate-delta" class="kpi-sub" style="color: var(--text-secondary);">Baseline: 87.5% (±0%)</div>
+            </div>
+            <div class="kpi-card" style="padding: 10px 14px;">
+              <div class="kpi-label" data-i18n="lbl_sim_budget_delta">Net Budget Impact</div>
+              <div id="policy-sim-budget-delta" class="kpi-value" style="font-size: 1.25rem; color: var(--brand-accent);">¥0</div>
+              <div class="kpi-sub" data-i18n="sub_monthly_delta">Monthly payroll differential</div>
+            </div>
+            <div class="kpi-card" style="padding: 10px 14px;">
+              <div class="kpi-label" data-i18n="lbl_sim_affected_count">Affected Employees</div>
+              <div id="policy-sim-affected-count" class="kpi-value" style="font-size: 1.25rem;">0</div>
+              <div class="kpi-sub" data-i18n="sub_status_transitions">Status transitions triggered</div>
+            </div>
+          </div>
+
+          <h3 style="font-size: 0.84rem; font-weight: 700; margin-bottom: 8px;" data-i18n="title_affected_employees">Affected Employee Cohort</h3>
+          <div class="table-wrapper" style="max-height: 280px; overflow-y: auto;">
+            <table class="enterprise-table">
+              <thead>
+                <tr>
+                  <th data-i18n="col_case_id">Case ID</th>
+                  <th data-i18n="col_emp_id">Employee ID</th>
+                  <th data-i18n="col_contract_type">Contract</th>
+                  <th data-i18n="col_baseline_status">Baseline Status</th>
+                  <th data-i18n="col_simulated_status">Simulated Status</th>
+                  <th data-i18n="col_delta_reason">Variance Rationale</th>
+                </tr>
+              </thead>
+              <tbody id="policy-sim-affected-tbody">
+                <tr>
+                  <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 32px;" data-i18n="msg_no_policy_changes">
+                    Current policy parameters match baseline statutory configuration. Adjust sliders to simulate variances.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

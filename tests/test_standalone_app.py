@@ -204,3 +204,83 @@ def test_copilot_endpoints() -> None:
     assert "case_id" in explanation
     assert "copilot_recommendation" in explanation
     assert "findings" in explanation
+
+
+def test_erp_preflight_and_preview_endpoints() -> None:
+    """Test Multi-ERP preflight validation and payload preview across connectors."""
+    # Pre-flight validation
+    res_preflight = client.post("/api/erp/preflight")
+    assert res_preflight.status_code == 200
+    preflight_data = res_preflight.json()
+    assert preflight_data["preflight_status"] == "READY_FOR_SYNC"
+    assert preflight_data["active_roster_count"] == 120
+
+    # SAP preview
+    res_sap = client.get("/api/erp/preview/sap")
+    assert res_sap.status_code == 200
+    sap_data = res_sap.json()
+    assert sap_data["target_system"] == "SAP S/4HANA Cloud (OData v4)"
+    assert "d" in sap_data["preview"]
+
+    # Workday preview
+    res_wd = client.get("/api/erp/preview/workday")
+    assert res_wd.status_code == 200
+    wd_data = res_wd.json()
+    assert wd_data["target_system"] == "Workday HCM (Inbound EIB)"
+    assert "Payroll_Input_Data" in wd_data["preview"] or "Header" in str(wd_data["preview"])
+
+    # Freee preview
+    res_freee = client.get("/api/erp/preview/freee")
+    assert res_freee.status_code == 200
+    freee_data = res_freee.json()
+    assert freee_data["target_system"] == "Freee HR Cloud (Japan CSV)"
+    assert "csv_content" in freee_data
+
+
+def test_erp_commit_and_export_endpoints() -> None:
+    """Test ERP batch commit with idempotency token generation and multi-format download."""
+    # Commit staged records with idempotency token
+    res_commit = client.post("/api/erp/commit", json={"connector": "sap"})
+    assert res_commit.status_code == 200
+    commit_data = res_commit.json()
+    assert commit_data["status"] == "COMMITTED"
+    assert commit_data["idempotency_token"].startswith("IDEM-")
+    assert commit_data["connector"] == "sap"
+
+    # Export SAP JSON
+    res_exp_sap = client.get("/api/erp/export/sap")
+    assert res_exp_sap.status_code == 200
+    assert "application/json" in res_exp_sap.headers.get("content-type", "")
+
+    # Export Freee CSV
+    res_exp_freee = client.get("/api/erp/export/freee")
+    assert res_exp_freee.status_code == 200
+    assert "text/csv" in res_exp_freee.headers.get("content-type", "")
+
+
+def test_policy_governance_studio_endpoints() -> None:
+    """Test Policy Governance Studio parameter configuration and cohort simulation."""
+    # Read active config
+    res_cfg = client.get("/api/policy/config")
+    assert res_cfg.status_code == 200
+    cfg = res_cfg.json()
+    assert cfg["policy_version"] == "2026.04-v1.2"
+    assert cfg["commute_tax_free_cap"] == 150000
+
+    # Simulate scenario: higher telework rate, housing allowed for contract workers
+    sim_payload = {
+        "commute_tax_free_cap": 200000,
+        "telework_daily_rate": 500,
+        "telework_monthly_cap": 10000,
+        "custom_deduction_rate_limit": 0.25,
+        "allow_contract_housing": True,
+        "allow_outsourcing_housing": False
+    }
+    res_sim = client.post("/api/policy/simulate", json=sim_payload)
+    assert res_sim.status_code == 200
+    sim_data = res_sim.json()
+    assert "simulated_auto_approval_rate" in sim_data
+    assert "net_monthly_payroll_delta" in sim_data
+    assert "affected_claims_count" in sim_data
+    assert sim_data["total_claims_simulated"] >= 1
+

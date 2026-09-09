@@ -77,8 +77,8 @@ IMBY/ (Repository Root)
 
 ## 2. Quickstart & Operational Guide
 
-### 2.1 Automated Test Suite Verification (40/40 Passing)
-Execute the complete test suite across data loading, neural network inference, hybrid segmentation, process mining, financial ROI modeling, and the standalone automation application:
+### 2.1 Automated Test Suite Verification (44/44 Passing)
+Execute the complete test suite across data loading, neural network inference, hybrid segmentation, process mining, financial ROI modeling, Multi-ERP connectors, Policy Governance Studio, and the standalone automation application:
 
 ```bash
 python -m pytest tests/ -v
@@ -117,9 +117,10 @@ Enterprise capabilities:
 - **Scaled Production Dataset:** 120 verified corporate claims (`EMP-9401` to `EMP-9520`) with 87.5% straight-through auto-approval, 7.5% review flags, and 5.0% policy rejections, plus 50 compliance edge cases.
 - **Sub-Millisecond Batch Ingestion:** Evaluates multi-case CSV/Excel batches in <5ms with automated schema normalization.
 - **Deterministic Statutory Compliance:** Strict enforcement of Japanese Income Tax Act Art. 21 (¥150,000 commute cap), Labor Standards Act Art. 24 (20% custom deduction limit), and Gyomu Itaku Kyuuyo Kitei Art. 4 (housing subsidy exclusion for outsourcing contracts).
+- **Enterprise Policy Governance & Scenario Simulation Studio:** Interactive parameter sandbox allowing HR specialists and compensation committees to calibrate statutory thresholds (commute cap, telework daily stipend, telework monthly ceiling, deduction ratio, housing subsidy eligibility matrix) and run live dry-run impact simulations across all 120 claims cohort.
+- **Multi-ERP Pre-Flight Staging & Integration Hub:** Pre-flight validation against the 120-employee active roster with export downloads for SAP S/4HANA OData v4 JSON, Workday HCM Inbound EIB JSON, and Freee HR Cloud Japanese CSV formats sealed with cryptographic SHA-256 idempotency tokens (`IDEM-...`).
 - **AI Labor Policy Copilot:** Grounded statutory reasoning and supervisory explanation drawer.
 - **Human-in-the-Loop Exception Triage:** Discretionary review desk with comparative mathematical breakdowns and supervisor override digital signatures.
-- **Pre-flight HRIS & ERP Commit Hub:** Pre-commit buffer for SAP, Oracle, Workday, and Freee API pipelines.
 - **Tamper-Evident SHA-256 Cryptographic Audit Ledger:** Immutable audit trail with cryptographic hash verification.
 - **Bilingual Interface (English / Japanese):** Real-time language toggle (`EN` / `JA`) across all interfaces with authentic Japanese statutory terminology (`要確認・レビュー`, `規程違反却下`, `正社員`, `契約社員`, `業務委託`).
 - **Port Collision Resilience:** Intelligent port discovery and socket protection in `run_app.py`, gracefully reusing existing instances or discovering available alternate ports.
@@ -142,6 +143,10 @@ Or open the static deliverable directly:
 ```
 deliverables/automation_dashboard.html
 ```
+
+Analytical capabilities:
+- **Process Digital Twin & Visual Telemetry Replay:** Click any of the 179 recovered work unit segments in the telemetry explorer to inspect second-by-second operations, application dwell distributions (Microsoft Word 53.2% lookup bottleneck, Excel calculations, Chrome portal entry), keystroke counts, and automated remediation rationale.
+- **Monte Carlo Financial Risk & Uncertainty Engine:** 10,000 stochastic iterations modeling operational volume shifts (±30%), wage variances ($30–$45/hr), and adoption fluctuations, yielding empirical confidence intervals (P10: 20.0 mo, P50: 26.2 mo, P90: 35.9 mo) and demonstrating a **90.2% probability of capital recovery within 36 months**.
 
 ---
 

@@ -36,6 +36,18 @@ class TestProcessMiningAndROI(unittest.TestCase):
         self.assertEqual(p_stats["total_duration_sec"], 360.0) # 180 + 180
         self.assertEqual(p_stats["mean_duration_sec"], 180.0)
 
+    def test_monte_carlo_simulation(self):
+        from src.analysis.roi_model import ROIPrioritizationModel
+        model = ROIPrioritizationModel()
+        mc = model.simulate_monte_carlo(iterations=1000)
+        self.assertEqual(mc["simulation_metadata"]["iterations"], 1000)
+        self.assertIn("percentiles", mc)
+        pct = mc["percentiles"]
+        self.assertIn("annual_net_savings_jpy", pct)
+        self.assertIn("payback_period_months", pct)
+        self.assertGreater(pct["payback_period_months"]["p90"], pct["payback_period_months"]["p10"])
+        self.assertGreater(mc["risk_probabilities"]["prob_payback_under_36_months_pct"], 70.0)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,4 +1,5 @@
 import statistics
+import random
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 
@@ -389,6 +390,127 @@ class ROIPrioritizationModel:
             item["rank"] = idx
 
         return ranked
+
+    def simulate_monte_carlo(
+        self,
+        process_label: str = "payroll_deduction_adjustment",
+        iterations: int = 10000,
+        random_seed: int = 42
+    ) -> Dict[str, Any]:
+        """
+        Executes a 10,000-iteration Monte Carlo financial risk and uncertainty simulation.
+        Stochastically models operational variances:
+        - Annual transaction volume: Normal(mean=9600, std=1200)
+        - Operator adoption rate: Triangular(0.70, 0.85, 0.95)
+        - Loaded labor wage rate: Uniform(3200, 3800) JPY/hr
+        - Manual dwell friction: Normal(mean=104.5, std=12.0) seconds
+        - Policy exception review: Triangular(8.0, 15.0, 25.0) seconds
+        - Straight-through automation rate: Triangular(0.75, 0.85, 0.92)
+
+        Returns statistical percentiles (P10, P50, P90), capital risk metrics, and payback probability.
+        """
+        rng = random.Random(random_seed)
+
+        initial_build_cost_jpy = 1400000.0
+        annual_maint_cost_jpy = 140000.0
+
+        payback_samples = []
+        net_savings_samples = []
+        roi_samples = []
+        npv_samples = []
+
+        for _ in range(iterations):
+            # 1. Stochastic operational parameters
+            vol = max(4000.0, rng.gauss(9600.0, 1200.0))
+            wage = rng.uniform(3200.0, 3800.0)
+            adopt = rng.triangular(0.70, 0.85, 0.95)
+            manual_sec = max(70.0, rng.gauss(104.5, 12.0))
+            auto_rate = rng.triangular(0.75, 0.85, 0.92)
+            review_sec = rng.triangular(8.0, 15.0, 25.0)
+
+            # 2. Workload & savings calculation
+            baseline_hours = (vol * manual_sec) / 3600.0
+            auto_cycle_sec = auto_rate * 0.0024 + (1.0 - auto_rate) * review_sec
+            automated_hours = (vol * adopt * auto_cycle_sec + vol * (1.0 - adopt) * manual_sec) / 3600.0
+            hours_saved = max(0.0, baseline_hours - automated_hours)
+
+            # 3. Cash flow & return metrics
+            gross_savings = hours_saved * wage
+            net_savings = gross_savings - annual_maint_cost_jpy
+
+            payback_months = (initial_build_cost_jpy / max(1.0, net_savings)) * 12.0 if net_savings > 0 else 99.0
+            three_yr_roi = ((3.0 * net_savings - initial_build_cost_jpy) / initial_build_cost_jpy) * 100.0
+            three_yr_npv = (3.0 * net_savings) - initial_build_cost_jpy
+
+            payback_samples.append(min(99.0, payback_months))
+            net_savings_samples.append(net_savings)
+            roi_samples.append(three_yr_roi)
+            npv_samples.append(three_yr_npv)
+
+        payback_samples.sort()
+        net_savings_samples.sort()
+        roi_samples.sort()
+        npv_samples.sort()
+
+        def percentile(arr: List[float], p: float) -> float:
+            idx = int(round(p * (len(arr) - 1)))
+            return arr[idx]
+
+        p10_payback = percentile(payback_samples, 0.10)
+        p50_payback = percentile(payback_samples, 0.50)
+        p90_payback = percentile(payback_samples, 0.90)
+
+        p10_savings = percentile(net_savings_samples, 0.10)
+        p50_savings = percentile(net_savings_samples, 0.50)
+        p90_savings = percentile(net_savings_samples, 0.90)
+
+        p10_roi = percentile(roi_samples, 0.10)
+        p50_roi = percentile(roi_samples, 0.50)
+        p90_roi = percentile(roi_samples, 0.90)
+
+        p10_npv = percentile(npv_samples, 0.10)
+        p50_npv = percentile(npv_samples, 0.50)
+        p90_npv = percentile(npv_samples, 0.90)
+
+        prob_payback_under_36 = round(sum(1 for x in payback_samples if x <= 36.0) / iterations * 100.0, 1)
+        prob_positive_roi = round(sum(1 for x in roi_samples if x > 0.0) / iterations * 100.0, 1)
+
+        return {
+            "simulation_metadata": {
+                "process_target": process_label,
+                "iterations": iterations,
+                "distribution_models": "Normal(Vol, ManualDwell) + Triangular(Adoption, AutoRate) + Uniform(Wage)",
+                "random_seed": random_seed
+            },
+            "percentiles": {
+                "payback_period_months": {
+                    "p10": round(p10_payback, 1),
+                    "p50_median": round(p50_payback, 1),
+                    "p90": round(p90_payback, 1)
+                },
+                "annual_net_savings_jpy": {
+                    "p10": round(p10_savings, 0),
+                    "p50_median": round(p50_savings, 0),
+                    "p90": round(p90_savings, 0)
+                },
+                "three_year_net_roi_pct": {
+                    "p10": round(p10_roi, 1),
+                    "p50_median": round(p50_roi, 1),
+                    "p90": round(p90_roi, 1)
+                },
+                "three_year_net_npv_jpy": {
+                    "p10": round(p10_npv, 0),
+                    "p50_median": round(p50_npv, 0),
+                    "p90": round(p90_npv, 0)
+                }
+            },
+            "risk_probabilities": {
+                "prob_payback_under_36_months_pct": prob_payback_under_36,
+                "prob_positive_three_year_roi_pct": prob_positive_roi,
+                "risk_rating": "LOW_CAPITAL_RISK" if prob_payback_under_36 >= 90.0 else "MODERATE_RISK"
+            }
+        }
+
 
 
 def calculate_process_metrics(segments: List[Dict[str, Any]]) -> Dict[str, Any]:
