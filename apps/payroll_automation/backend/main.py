@@ -64,28 +64,30 @@ _STAGED_ERP_RECORDS: List[Dict[str, Any]] = []
 
 
 def initialize_app_data():
-    """Bootstraps default verified production claims."""
+    """Bootstraps default verified production claims (120 records)."""
     global _CURRENT_CASES
     if not _CURRENT_CASES:
-        results = engine.process_batch(BATCH_CASES)
-        # Add additional diverse production records (6-20)
-        extra_cases = [
-            {
-                "case_id": f"PI-PROD-2026-{i+6:03d}",
-                "employee_id": f"EMP-94{i+6:02d}",
-                "employee_name": f"Employee {i+6:02d}",
-                "contract_type": "regular" if i % 2 == 0 else ("contract" if i % 3 == 0 else "outsourcing"),
-                "base_salary": 310000 + (i * 15000),
-                "claimed_commute": 14000 + (i * 2000),
-                "telework_days": 6 + (i % 10),
-                "claimed_housing": 20000 if i % 2 == 0 else (15000 if i % 4 == 0 else 0),
-                "custom_deduction": 12000 if i % 4 == 0 else 0,
-                "deduction_reason": "Company Housing Maintenance" if i % 4 == 0 else ""
-            }
-            for i in range(15)
-        ]
-        all_results = results + engine.process_batch(extra_cases)
-        _CURRENT_CASES = all_results
+        csv_file = Path(__file__).resolve().parent.parent / "sample_data" / "monthly_claims_batch_01.csv"
+        if csv_file.exists():
+            with open(csv_file, "r", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                cases_to_process = []
+                for row in reader:
+                    cases_to_process.append({
+                        "case_id": row["case_id"],
+                        "employee_id": row["employee_id"],
+                        "employee_name": row["employee_name"],
+                        "contract_type": row["contract_type"],
+                        "base_salary": float(row["base_salary"]),
+                        "claimed_commute": float(row["claimed_commute"]),
+                        "telework_days": int(row["telework_days"]),
+                        "claimed_housing": float(row["claimed_housing"]),
+                        "custom_deduction": float(row["custom_deduction"]),
+                        "deduction_reason": row.get("deduction_reason", "")
+                    })
+                _CURRENT_CASES = engine.process_batch(cases_to_process)
+        else:
+            _CURRENT_CASES = engine.process_batch(BATCH_CASES)
 
         # Stage auto-approved items initially
         for r in _CURRENT_CASES:

@@ -57,17 +57,23 @@ The platform enforces the statutory framework of Japanese Labor and Tax Law dete
 
 ## 4. Execution & Deployment Guide
 
-### Option 1: Standalone Application Runner (Recommended)
-Launch the dedicated backend server and automatically open the interface in the default browser:
+### Option 1: Standalone Desktop Executable (.exe)
+Launch the fully compiled, self-contained Windows desktop application (requires no web browser, runs independently with native window container):
+```cmd
+apps\payroll_automation\launch_desktop_app.bat
+```
+*(Or execute `apps\payroll_automation\dist\PayrollAutomationSuite\PayrollAutomationSuite.exe` directly)*
 
+### Option 2: Standalone Desktop Container (Python)
+Launch the native Windows desktop window via Python with embedded ASGI engine:
 ```bash
-python apps/payroll_automation/run_app.py
+python apps/payroll_automation/desktop_app.py
 ```
 
-### Option 2: Windows Batch Launcher
-Execute the one-click batch script:
-```cmd
-apps\payroll_automation\launch_payroll_app.bat
+### Option 3: Web Server & Browser Runner
+Launch the dedicated backend server and automatically open the interface in the default browser:
+```bash
+python apps/payroll_automation/run_app.py
 ```
 
 The application interface is served at:
@@ -101,8 +107,9 @@ uvicorn apps.payroll_automation.backend.main:app --host 127.0.0.1 --port 8500 --
 
 ---
 
-## 6. Sample Datasets
+## 6. Sample Datasets (170+ Production & Audit Records)
 
-The application includes production test datasets located in `sample_data/`:
-- `monthly_claims_batch_01.csv`: Standard multi-contract batch (Regular, Contract, Outsourcing) verifying straight-through processing.
-- `edge_cases_batch_02.csv`: Edge cases including statutory commuting cap breaches, prohibited outsourcing housing subsidies, and custom deduction ceilings.
+The application includes enterprise production test datasets located in `sample_data/`:
+- `monthly_claims_batch_01.csv`: 120 production multi-contract claims (`EMP-9401` to `EMP-9520`) with 87.5% straight-through auto-approval rate, 7.5% commute/deduction review flags, and 5.0% policy violation rejections.
+- `edge_cases_batch_02.csv`: 50 stress-testing compliance edge cases including borderline statutory tax thresholds, housing subsidies for non-regular arrangements, and deduction limits under Labor Standards Act Article 24.
+- `seed_cases_120.json`: 120 pre-evaluated claims with full audit trail breakdowns for offline local verification.
