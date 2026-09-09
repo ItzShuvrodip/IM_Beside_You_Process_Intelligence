@@ -1036,7 +1036,6 @@ def generate_dashboard_html(output_path: Path):
             <button class="nav-item active" onclick="switchTab('cockpit')">Executive Cockpit</button>
             <button class="nav-item" onclick="switchTab('mining')">Process Graph & DFG</button>
             <button class="nav-item" onclick="switchTab('roi')">Economic ROI Model</button>
-            <button class="nav-item" onclick="switchTab('review')">Claims Review Desk</button>
             <button class="nav-item" onclick="switchTab('segments')">Work Units Telemetry</button>
         </nav>
     </header>
@@ -1088,6 +1087,28 @@ def generate_dashboard_html(output_path: Path):
                     <div class="kpi-stat">$104,400</div>
                     <div class="kpi-context neutral">
                         <span>~14.8M JPY / year operational capacity</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STANDALONE PAYROLL AUTOMATION SUITE LAUNCHPAD -->
+            <div class="card" style="margin-top: 24px; border-left: 4px solid var(--accent-blue); background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                    <div style="max-width: 760px;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                            <span class="tag-pill tag-approved" style="font-weight: 700; letter-spacing: 0.5px;">STANDALONE ENTERPRISE APPLICATION</span>
+                            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent-blue); background: #e0f2fe; padding: 2px 8px; border-radius: 4px; font-weight: 600;">PORT 8500</span>
+                        </div>
+                        <h2 style="font-size: 18px; font-weight: 800; color: var(--text-title); letter-spacing: -0.3px;">Enterprise Payroll Deduction Automation Suite</h2>
+                        <p style="font-size: 13px; color: var(--text-secondary); margin-top: 6px; line-height: 1.5;">
+                            The operational automation tool (Step 3) has been decoupled from this analytics dashboard into a dedicated full-stack web and desktop project. Features high-speed batch CSV/Excel processing (<5ms per batch), AI Labor Policy Copilot, exception review desk with supervisor overrides, ERP staging, and a cryptographic SHA-256 audit ledger.
+                        </p>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
+                        <a href="http://localhost:8500" target="_blank" class="btn btn-solid" style="padding: 10px 22px; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; background: #1d4ed8; color: #ffffff;">
+                            <span>🚀</span> Launch Standalone Suite
+                        </a>
+                        <span style="font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--text-tertiary);">python apps/payroll_automation/run_app.py</span>
                     </div>
                 </div>
             </div>
@@ -1337,48 +1358,7 @@ def generate_dashboard_html(output_path: Path):
             </div>
         </section>
 
-        <!-- VIEW 4: CLAIMS REVIEW DESK -->
-        <section id="tab-review" class="view-panel">
-            <div class="card">
-                <div class="table-controls">
-                    <div class="filter-group">
-                        <button class="pill-btn active" onclick="filterCases('ALL')">All Records (<span id="count-all">20</span>)</button>
-                        <button class="pill-btn" onclick="filterCases('AUTO_APPROVED')">Auto-Approved (<span id="count-approved">16</span>)</button>
-                        <button class="pill-btn" onclick="filterCases('FLAGGED_FOR_REVIEW')">Flagged for Review (<span id="count-flagged">3</span>)</button>
-                        <button class="pill-btn" onclick="filterCases('REJECTED')">Rejected (<span id="count-rejected">1</span>)</button>
-                    </div>
-
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <input type="text" id="case-search" class="input-box" placeholder="Filter by employee, ID, contract..." oninput="filterCases()">
-                        <button class="btn btn-solid" onclick="openClaimModal()">+ Simulate Claim</button>
-                        <button class="btn btn-outline" onclick="exportApprovedCSV()">Export CSV</button>
-                        <button class="btn btn-outline" onclick="resetCases()" title="Reset to baseline">Reset</button>
-                    </div>
-                </div>
-
-                <div class="table-card">
-                    <table id="claims-table">
-                        <thead>
-                            <tr>
-                                <th>Case ID</th>
-                                <th>Employee / Contract</th>
-                                <th>Status</th>
-                                <th>Audit Trail & Decision Rules</th>
-                                <th style="text-align: right;">Gross Additions</th>
-                                <th style="text-align: right;">Deductions</th>
-                                <th style="text-align: right;">Net Adjustment</th>
-                                <th style="text-align: center;">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="claims-tbody">
-                            <!-- Populated by JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- VIEW 5: WORK UNITS TELEMETRY -->
+        <!-- VIEW 4: WORK UNITS TELEMETRY -->
         <section id="tab-segments" class="view-panel">
             <div class="card">
                 <div class="table-controls">
@@ -1434,74 +1414,6 @@ def generate_dashboard_html(output_path: Path):
         </section>
     </main>
 
-    <!-- Modal: Simulate New Claim -->
-    <div id="claim-modal" class="modal-shade">
-        <div class="modal-box">
-            <div class="modal-head">
-                <h3>Simulate New Claim Case</h3>
-                <button class="modal-close" onclick="closeClaimModal()">&times;</button>
-            </div>
-
-            <form id="new-claim-form" onsubmit="handleClaimSubmit(event)">
-                <div class="form-grid">
-                    <div class="form-row">
-                        <label>Employee Name</label>
-                        <input type="text" id="form-name" required value="Employee 21">
-                    </div>
-                    <div class="form-row">
-                        <label>Employee ID</label>
-                        <input type="text" id="form-id" required value="EMP-9421">
-                    </div>
-
-                    <div class="form-row">
-                        <label>Contract Type</label>
-                        <select id="form-contract" required>
-                            <option value="regular">Regular Staff (Seishain)</option>
-                            <option value="contract">Contract Staff (Keiyaku)</option>
-                            <option value="outsourcing">Outsourcing (Gyomu Itaku)</option>
-                            <option value="part_time">Part-Time (Arubaito)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-row">
-                        <label>Base Salary (JPY)</label>
-                        <input type="number" id="form-salary" required value="340000" step="10000">
-                    </div>
-
-                    <div class="form-row">
-                        <label>Claimed Commute (JPY)</label>
-                        <input type="number" id="form-commute" required value="16500" step="500">
-                    </div>
-
-                    <div class="form-row">
-                        <label>Telework Days</label>
-                        <input type="number" id="form-telework" required value="12" min="0" max="31">
-                    </div>
-
-                    <div class="form-row full">
-                        <label>Claimed Housing Allowance (JPY) - Regular Staff Max 20,000</label>
-                        <input type="number" id="form-housing" value="20000" step="5000">
-                    </div>
-
-                    <div class="form-row">
-                        <label>Custom Deduction (JPY)</label>
-                        <input type="number" id="form-custom-ded" value="0" step="1000">
-                    </div>
-
-                    <div class="form-row">
-                        <label>Deduction Reason</label>
-                        <input type="text" id="form-custom-reason" placeholder="Required if deduction > 0">
-                    </div>
-                </div>
-
-                <div style="display: flex; justify-content: flex-end; gap: 8px;">
-                    <button type="button" class="btn btn-outline" onclick="closeClaimModal()">Cancel</button>
-                    <button type="submit" class="btn btn-solid">Run Verification</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- Toast Deck -->
     <div id="toast-container" class="toast-deck"></div>
 
@@ -1530,7 +1442,6 @@ def generate_dashboard_html(output_path: Path):
         document.addEventListener('DOMContentLoaded', async () => {{
             await detectBackendMode();
             renderCandidateRankings();
-            renderClaimsTable();
             renderSegmentsTable();
             recalcROI();
         }});
@@ -1598,297 +1509,6 @@ def generate_dashboard_html(output_path: Path):
                 `;
                 container.appendChild(row);
             }});
-        }}
-
-        function renderClaimsTable() {{
-            const tbody = document.getElementById('claims-tbody');
-            tbody.innerHTML = '';
-
-            const query = (document.getElementById('case-search').value || '').toLowerCase();
-            const filtered = state.cases.filter(c => {{
-                const matchesFilter = state.activeFilter === 'ALL' || c.status === state.activeFilter || (state.activeFilter === 'AUTO_APPROVED' && c.status.includes('APPROVED'));
-                const matchesSearch = !query || 
-                    c.case_id.toLowerCase().includes(query) || 
-                    c.input_data.employee_name.toLowerCase().includes(query) || 
-                    c.input_data.contract_type.toLowerCase().includes(query);
-                return matchesFilter && matchesSearch;
-            }});
-
-            const allCount = state.cases.length;
-            const approvedCount = state.cases.filter(c => c.status.includes('APPROVED')).length;
-            const flaggedCount = state.cases.filter(c => c.status === 'FLAGGED_FOR_REVIEW').length;
-            const rejectedCount = state.cases.filter(c => c.status.includes('REJECTED')).length;
-
-            document.getElementById('count-all').innerText = allCount;
-            document.getElementById('count-approved').innerText = approvedCount;
-            document.getElementById('count-flagged').innerText = flaggedCount;
-            document.getElementById('count-rejected').innerText = rejectedCount;
-
-            document.getElementById('kpi-auto-rate').innerText = ((approvedCount / allCount) * 100).toFixed(1) + '%';
-            document.getElementById('kpi-flagged-count').innerText = flaggedCount + ' cases';
-
-            filtered.forEach(c => {{
-                const tr = document.createElement('tr');
-                const inp = c.input_data;
-                const calc = c.calculated_details || {{}};
-
-                let badgeCls = 'tag-approved';
-                if (c.status === 'FLAGGED_FOR_REVIEW') badgeCls = 'tag-flagged';
-                else if (c.status.includes('REJECTED')) badgeCls = 'tag-rejected';
-                else if (c.status === 'APPROVED_BY_SUPERVISOR') badgeCls = 'tag-supervisor';
-
-                const gross = calc.total_gross_addition ? `+¥${{calc.total_gross_addition.toLocaleString()}}` : '-';
-                const ded = calc.total_deduction ? `-¥${{calc.total_deduction.toLocaleString()}}` : '-';
-                const net = calc.net_adjustment ? `¥${{calc.net_adjustment.toLocaleString()}}` : '-';
-
-                let actionHtml = `<span style="font-size: 11px; color: var(--text-tertiary);">-</span>`;
-                if (c.status === 'FLAGGED_FOR_REVIEW') {{
-                    actionHtml = `
-                        <div style="display: flex; gap: 6px; justify-content: center;">
-                            <button class="action-chip chip-approve" onclick="supervisorOverride('${{c.case_id}}', 'APPROVED_BY_SUPERVISOR')">Approve</button>
-                            <button class="action-chip chip-reject" onclick="supervisorOverride('${{c.case_id}}', 'REJECTED_BY_SUPERVISOR')">Reject</button>
-                        </div>
-                    `;
-                }}
-
-                tr.innerHTML = `
-                    <td style="font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; color: var(--accent-blue);">${{c.case_id}}</td>
-                    <td>
-                        <strong style="color: var(--text-title); font-size: 13px;">${{inp.employee_name}}</strong>
-                        <div style="font-size: 11px; color: var(--text-secondary);">${{inp.employee_id}} · <span style="text-transform: capitalize;">${{inp.contract_type}}</span></div>
-                    </td>
-                    <td><span class="tag-pill ${{badgeCls}}"><span class="tag-dot"></span>${{c.status}}</span></td>
-                    <td style="font-size: 12px; color: var(--text-secondary); max-width: 320px; line-height: 1.4;">${{c.decision_notes}}</td>
-                    <td class="num-right" style="color: var(--accent-emerald);">${{gross}}</td>
-                    <td class="num-right" style="color: var(--accent-rose);">${{ded}}</td>
-                    <td class="num-right" style="font-weight: 700; color: var(--text-title);">${{net}}</td>
-                    <td style="text-align: center;">${{actionHtml}}</td>
-                `;
-                tbody.appendChild(tr);
-            }});
-        }}
-
-        function filterCases(filterType) {{
-            if (filterType) {{
-                state.activeFilter = filterType;
-                document.querySelectorAll('.pill-btn').forEach(btn => btn.classList.remove('active'));
-                const targetBtn = Array.from(document.querySelectorAll('.pill-btn')).find(b => b.getAttribute('onclick').includes(filterType));
-                if (targetBtn) targetBtn.classList.add('active');
-            }}
-            renderClaimsTable();
-        }}
-
-        async function supervisorOverride(caseId, decision) {{
-            const promptText = decision === 'APPROVED_BY_SUPERVISOR' 
-                ? 'Supervisor Memo / Reason for approving policy override:' 
-                : 'Supervisor Memo for rejection:';
-            const memo = prompt(promptText, 'Verified with HR Division Director via email');
-            if (memo === null) return;
-
-            if (state.isLiveApi) {{
-                try {{
-                    const res = await fetch('/api/supervisor_override', {{
-                        method: 'POST',
-                        headers: {{ 'Content-Type': 'application/json' }},
-                        body: JSON.stringify({{ case_id: caseId, decision: decision, supervisor_memo: memo }})
-                    }});
-                    if (res.ok) {{
-                        const data = await res.json();
-                        const idx = state.cases.findIndex(c => c.case_id === caseId);
-                        if (idx !== -1) state.cases[idx] = data.updated_record;
-                        showToast(`Case ${{caseId}} updated via API`, 'success');
-                        renderClaimsTable();
-                        return;
-                    }}
-                }} catch (e) {{
-                    console.error('API call failed, mutating local state');
-                }}
-            }}
-
-            const rec = state.cases.find(c => c.case_id === caseId);
-            if (rec) {{
-                rec.status = decision;
-                rec.decision_notes += ` | [SUPERVISOR OVERRIDE: ${{memo}}]`;
-                showToast(`Case ${{caseId}} overridden to ${{decision}}`, 'success');
-                renderClaimsTable();
-            }}
-        }}
-
-        function simulatePayrollRules(claim) {{
-            const salary = Number(claim.base_salary) || 0;
-            const claimedCommute = Number(claim.claimed_commute) || 0;
-            const teleworkDays = Number(claim.telework_days) || 0;
-            const claimedHousing = Number(claim.claimed_housing) || 0;
-            const customDed = Number(claim.custom_deduction) || 0;
-            const contract = claim.contract_type || "regular";
-
-            let status = "AUTO_APPROVED: Passed all statutory and corporate policy validation checks";
-            let notes = [];
-            let isApproved = true;
-
-            // 1. Commute allowance verification (statutory limit 150,000 JPY)
-            const commuteCap = 150000;
-            const approvedCommute = Math.min(claimedCommute, commuteCap);
-            if (claimedCommute > commuteCap) {{
-                isApproved = false;
-                notes.push(`Commute exceeds statutory tax-exempt cap (¥${{claimedCommute.toLocaleString()}} > ¥${{commuteCap.toLocaleString()}})`);
-            }}
-
-            // 2. Telework allowance (250 JPY/day, max 5,000 JPY/mo)
-            const calculatedTelework = Math.min(teleworkDays * 250, 5000);
-
-            // 3. Housing allowance check (cap 30,000 JPY)
-            let approvedHousing = 0;
-            if (contract === "outsourcing" || contract === "part_time") {{
-                if (claimedHousing > 0) {{
-                    isApproved = false;
-                    notes.push(`Housing subsidy not standard for ${{contract}} under article 4 - requires HR supervisor sign-off`);
-                }}
-            }} else {{
-                approvedHousing = Math.min(claimedHousing, 30000);
-            }}
-
-            // 4. Statutory deductions
-            let socialIns = 0;
-            let empIns = 0;
-            if (contract === "regular" || contract === "contract") {{
-                socialIns = Math.round(salary * 0.152);
-                empIns = Math.round(salary * 0.006);
-            }}
-
-            // 5. Custom deduction cap (20% of base salary)
-            if (customDed > (salary * 0.20)) {{
-                isApproved = false;
-                notes.push(`Custom deduction exceeds 20% of base salary (¥${{customDed.toLocaleString()}}) - requires supervisor authorization`);
-            }}
-            if (customDed > 0 && !claim.deduction_reason) {{
-                isApproved = false;
-                notes.push(`Custom deduction ¥${{customDed.toLocaleString()}} missing required documentation`);
-            }}
-
-            const totalGross = approvedCommute + calculatedTelework + approvedHousing;
-            const totalDed = socialIns + empIns + customDed;
-            const net = totalGross - totalDed;
-
-            if (!isApproved) {{
-                status = `FLAG_REVIEW: ${{notes.join(" | ")}}`;
-            }}
-
-            return {{
-                case_id: claim.case_id || `PI-SIM-${{Math.floor(1000 + Math.random() * 9000)}}`,
-                input_data: claim,
-                status: status,
-                decision_notes: notes.join(" | ") || "Verified against corporate HR standing policy v2026.04-v1.2",
-                calculated_details: {{
-                    policy_version: "2026.04-v1.2",
-                    approved_commute: approvedCommute,
-                    approved_telework: calculatedTelework,
-                    approved_housing: approvedHousing,
-                    total_gross_addition: totalGross,
-                    social_insurance_deduction: socialIns,
-                    employment_insurance_deduction: empIns,
-                    custom_deduction: customDed,
-                    total_deduction: totalDed,
-                    net_adjustment: net
-                }}
-            }};
-        }}
-
-        async function handleClaimSubmit(e) {{
-            e.preventDefault();
-            const claim = {{
-                case_id: `PI-MANUAL-${{Math.floor(1000 + Math.random() * 9000)}}`,
-                employee_name: document.getElementById('form-name').value,
-                employee_id: document.getElementById('form-id').value,
-                contract_type: document.getElementById('form-contract').value,
-                base_salary: parseInt(document.getElementById('form-salary').value),
-                claimed_commute: parseInt(document.getElementById('form-commute').value),
-                telework_days: parseInt(document.getElementById('form-telework').value),
-                claimed_housing: parseInt(document.getElementById('form-housing').value) || 0,
-                custom_deduction: parseInt(document.getElementById('form-custom-ded').value) || 0,
-                deduction_reason: document.getElementById('form-custom-reason').value || ''
-            }};
-
-            if (state.isLiveApi) {{
-                try {{
-                    const res = await fetch('/api/process_case', {{
-                        method: 'POST',
-                        headers: {{ 'Content-Type': 'application/json' }},
-                        body: JSON.stringify(claim)
-                    }});
-                    if (res.ok) {{
-                        const data = await res.json();
-                        state.cases.unshift(data.result);
-                        closeClaimModal();
-                        showToast(`Case ${{data.result.case_id}} evaluated: ${{data.result.status}}`, 'success');
-                        renderClaimsTable();
-                        return;
-                    }}
-                }} catch (err) {{
-                    console.error('API call failed, falling back to local simulation');
-                }}
-            }}
-
-            const result = simulatePayrollRules(claim);
-            state.cases.unshift(result);
-            closeClaimModal();
-            showToast(`Evaluated claim for ${{claim.employee_name}}: ${{result.status}}`, 'success');
-            renderClaimsTable();
-        }}
-
-        function exportApprovedCSV() {{
-            const approved = state.cases.filter(c => c.status.includes('APPROVED'));
-            if (approved.length === 0) {{
-                showToast('No approved records available to export', 'warning');
-                return;
-            }}
-
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "case_id,employee_id,employee_name,contract_type,approved_commute,approved_telework,approved_housing,social_ins,employment_ins,custom_ded,net_adjustment,status,notes\\n";
-
-            approved.forEach(c => {{
-                const inp = c.input_data;
-                const calc = c.calculated_details || {{}};
-                const row = [
-                    c.case_id,
-                    inp.employee_id,
-                    `"${{inp.employee_name}}"`,
-                    inp.contract_type,
-                    calc.approved_commute || 0,
-                    calc.approved_telework || 0,
-                    calc.approved_housing || 0,
-                    calc.social_insurance_deduction || 0,
-                    calc.employment_insurance_deduction || 0,
-                    calc.custom_deduction || 0,
-                    calc.net_adjustment || 0,
-                    c.status,
-                    `"${{(c.decision_notes || '').replace(/"/g, '""')}}"`
-                ].join(',');
-                csvContent += row + "\\n";
-            }});
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "approved_payroll_adjustments.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            showToast(`Exported ${{approved.length}} records to CSV`, 'success');
-        }}
-
-        function resetCases() {{
-            state.cases = JSON.parse(JSON.stringify(INITIAL_CASES));
-            renderClaimsTable();
-            showToast('Cases reset to baseline state', 'success');
-        }}
-
-        function openClaimModal() {{
-            document.getElementById('claim-modal').classList.add('active');
-        }}
-
-        function closeClaimModal() {{
-            document.getElementById('claim-modal').classList.remove('active');
         }}
 
         function recalcROI() {{

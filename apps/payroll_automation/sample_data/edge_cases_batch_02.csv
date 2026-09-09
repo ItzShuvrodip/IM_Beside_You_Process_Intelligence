@@ -1,0 +1,6 @@
+case_id,employee_id,employee_name,contract_type,base_salary,claimed_commute,telework_days,claimed_housing,custom_deduction,deduction_reason
+PI-EDGE-001,EMP-9413,Employee 13,regular,310000,185000,10,25000,0,
+PI-EDGE-002,EMP-9414,Employee 14,outsourcing,400000,12000,5,30000,0,
+PI-EDGE-003,EMP-9415,Employee 15,regular,250000,15000,0,10000,75000,Emergency loan repayment
+PI-EDGE-004,EMP-9416,Employee 16,contract,300000,18000,8,0,15000,
+PI-EDGE-005,EMP-9417,Employee 17,regular,420000,14000,15,20000,0,

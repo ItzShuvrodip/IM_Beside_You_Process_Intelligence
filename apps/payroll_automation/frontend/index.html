@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IMBY Enterprise Payroll Deduction Automation Suite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Header Bar -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="brand-badge">IMBY AUTOMATION</div>
+      <div class="header-title-block">
+        <h1 class="header-title">Payroll Deduction Automation Suite</h1>
+        <p class="header-sub">Deterministic Statutory Engine · Japanese Labor Policy Copilot · Zero-Touch ERP Staging</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div id="stat-sync-state" class="status-pill status-approved" style="font-size: 0.75rem; padding: 4px 10px;">
+        ● Engine Online
+      </div>
+      <button id="btn-toggle-copilot" class="btn btn-secondary btn-copilot-pill">
+        <span>🤖</span>
+        <span>Policy Copilot</span>
+      </button>
+      <button id="btn-theme-toggle" class="btn btn-icon" title="Toggle Light/Dark Theme">
+        🌓
+      </button>
+    </div>
+  </header>
+
+  <!-- Global Metrics Strip -->
+  <section class="kpi-strip">
+    <div class="kpi-card">
+      <div class="kpi-label">Total Claims Evaluated</div>
+      <div id="stat-total-cases" class="kpi-value">0</div>
+      <div class="kpi-sub">Batches & Interactive Sim</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Auto-Approved (Straight-Through)</div>
+      <div id="stat-auto-approved" class="kpi-value" style="color: var(--success);">0</div>
+      <div class="kpi-sub"><span id="stat-auto-rate">0%</span> STP efficiency</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Flagged For Review</div>
+      <div id="stat-flagged" class="kpi-value" style="color: var(--warning);">0</div>
+      <div class="kpi-sub">Cap breaches & anomalies</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Statutory Rejections</div>
+      <div id="stat-rejected" class="kpi-value" style="color: var(--danger);">0</div>
+      <div class="kpi-sub">Disallowed allowances & violations</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Net Payroll Impact</div>
+      <div id="stat-net-sum" class="kpi-value" style="color: var(--brand-accent);">¥0</div>
+      <div class="kpi-sub">Audited & Reconciled</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Clerical Time Saved</div>
+      <div id="stat-time-saved" class="kpi-value" style="color: #60a5fa;">0.0 hrs</div>
+      <div class="kpi-sub">Benchmark: 182s per manual unit</div>
+    </div>
+  </section>
+
+  <!-- Main Navigation Tabs -->
+  <nav class="nav-bar">
+    <button class="nav-btn active" data-target="view-batch">
+      <span>📂</span> Batch Processing Center
+    </button>
+    <button class="nav-btn" data-target="view-exceptions">
+      <span>⚠️</span> Exception Review Desk
+    </button>
+    <button class="nav-btn" data-target="view-staging">
+      <span>🚀</span> HRIS & ERP Commit Hub
+    </button>
+    <button class="nav-btn" data-target="view-audit">
+      <span>🛡️</span> Cryptographic Audit Ledger
+    </button>
+    <button class="nav-btn" data-target="view-sandbox">
+      <span>🧪</span> Interactive Claim Simulator
+    </button>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="main-container">
+    
+    <!-- VIEW 1: BATCH PROCESSING CENTER -->
+    <div id="view-batch" class="view-panel active">
+      <!-- File Ingestion Dropzone -->
+      <div class="glass-card" style="margin-bottom: 24px;">
+        <div class="section-title">
+          <span>⚡</span>
+          <h2>Automated Batch Ingestion & Evaluation</h2>
+        </div>
+        <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 0.9rem;">
+          Drop payroll claim spreadsheets (CSV or Excel) containing Japanese or English column headers. The deterministic engine evaluates each row in sub-millisecond time against statutory tax caps, telework ceilings, housing allowance contract restrictions, and Article 24 deduction limits.
+        </p>
+        <div id="dropzone" class="dropzone">
+          <div class="dropzone-icon">📥</div>
+          <div class="dropzone-title">Drag & Drop Payroll Files Here, or Click to Browse</div>
+          <div class="dropzone-sub">Supports .CSV, .XLSX, .XLS (Multilingual Japanese / English auto-detection)</div>
+          <input type="file" id="file-input" style="display: none;" accept=".csv, .xlsx, .xls" />
+          <div style="margin-top: 16px; display: flex; gap: 12px; justify-content: center;">
+            <button id="btn-browse-file" class="btn btn-secondary">Select File</button>
+            <button id="btn-load-sample-1" class="btn btn-outline">Load Production Batch #1</button>
+            <button id="btn-load-sample-2" class="btn btn-outline">Load Edge Cases Batch #2</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Claims Processing Queue -->
+      <div class="glass-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 16px;">
+          <div class="section-title" style="margin-bottom: 0;">
+            <span>📋</span>
+            <h2>Evaluated Claims Master Queue</h2>
+          </div>
+          <div class="filter-controls">
+            <input type="text" id="queue-search" class="search-box" placeholder="Filter by Employee ID, Contract, or Reason..." />
+            <select id="filter-status" class="filter-select">
+              <option value="ALL">All Statuses</option>
+              <option value="AUTO_APPROVED">Auto-Approved</option>
+              <option value="FLAGGED_FOR_REVIEW">Flagged for Review</option>
+              <option value="REJECTED">Rejected</option>
+              <option value="SUPERVISOR_OVERRIDE_APPROVED">Supervisor Approved</option>
+            </select>
+            <button id="btn-export-csv" class="btn btn-secondary">
+              <span>📊</span> Export CSV
+            </button>
+            <button id="btn-export-erp" class="btn btn-primary">
+              <span>💾</span> Export ERP Payloads
+            </button>
+            <button id="btn-reset-data" class="btn btn-danger">
+              <span>🔄</span> Reset
+            </button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Case ID</th>
+                <th>Employee / Contract</th>
+                <th>Status</th>
+                <th>Deterministic Audit Trail & Statutory Basis</th>
+                <th>Gross Additions</th>
+                <th>Deductions</th>
+                <th>Net Adjustment</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="claims-table-body">
+              <tr>
+                <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 40px;">
+                  No claims evaluated yet. Ingest a file above or load a sample batch.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 2: EXCEPTION REVIEW DESK -->
+    <div id="view-exceptions" class="view-panel">
+      <div class="glass-card">
+        <div class="section-title">
+          <span>⚠️</span>
+          <h2>Human-in-the-Loop Exception Triage</h2>
+        </div>
+        <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 0.9rem;">
+          Claims requiring discretionary human supervisor review due to commute excess, telework ceiling overflows, or statutory violations. Supervisors can inspect mathematical breakdowns, ask the Policy Copilot for legal precedents, and execute legally binding overrides with cryptographic audit logging.
+        </p>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Case ID</th>
+                <th>Employee / Contract</th>
+                <th>Audit Reasons</th>
+                <th>Gross Additions</th>
+                <th>Deductions</th>
+                <th>Net</th>
+                <th>Triage Action</th>
+              </tr>
+            </thead>
+            <tbody id="exceptions-table-body">
+              <tr>
+                <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 40px;">
+                  No pending exceptions. All claims are in clean states.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 3: HRIS & ERP COMMIT HUB -->
+    <div id="view-staging" class="view-panel">
+      <div class="glass-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 16px;">
+          <div class="section-title" style="margin-bottom: 0;">
+            <span>🚀</span>
+            <h2>HRIS & ERP Live Staging Buffer</h2>
+          </div>
+          <button id="btn-commit-staging" class="btn btn-primary">
+            <span>⚡</span> Commit Validated Payloads to ERP
+          </button>
+        </div>
+        <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 0.9rem;">
+          Pre-flight staging zone for SAP / Oracle / Freee payroll endpoints. Only claims with verified legal compliance (<span class="status-pill status-approved" style="font-size: 0.7rem;">AUTO_APPROVED</span> or <span class="status-pill status-approved" style="font-size: 0.7rem;">SUPERVISOR_OVERRIDE_APPROVED</span>) are queued for downstream batch API transmission.
+        </p>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Payload Reference</th>
+                <th>Employee ID</th>
+                <th>Contract</th>
+                <th>Approved Net (JPY)</th>
+                <th>Statutory Verifications Passed</th>
+                <th>ERP Status</th>
+              </tr>
+            </thead>
+            <tbody id="staging-table-body">
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 40px;">
+                  Staging buffer is empty. Ingest and evaluate claims to stage them for ERP.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 4: CRYPTOGRAPHIC AUDIT LEDGER -->
+    <div id="view-audit" class="view-panel">
+      <div class="glass-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 16px;">
+          <div class="section-title" style="margin-bottom: 0;">
+            <span>🛡️</span>
+            <h2>Tamper-Evident SHA-256 Audit Trail</h2>
+          </div>
+          <button id="btn-verify-audit" class="btn btn-secondary">
+            <span>🔍</span> Verify Cryptographic Hashes
+          </button>
+        </div>
+        <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 0.9rem;">
+          Immutable transaction ledger. Every auto-approval, policy violation, and supervisor override generates a SHA-256 digest sealing the case ID, timestamp, decision code, and operator digital signature for Japanese labor authority audit readiness.
+        </p>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Timestamp (UTC)</th>
+                <th>Case ID</th>
+                <th>Event Type</th>
+                <th>Actor</th>
+                <th>SHA-256 Ledger Hash</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody id="audit-table-body">
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 40px;">
+                  Audit ledger initialized. No transactions recorded yet.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 5: INTERACTIVE CLAIM SIMULATOR -->
+    <div id="view-sandbox" class="view-panel">
+      <div class="split-layout">
+        <!-- Form Side -->
+        <div class="glass-card">
+          <div class="section-title">
+            <span>🧪</span>
+            <h2>Single Claim Deterministic Simulator</h2>
+          </div>
+          <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 0.9rem;">
+            Test policy rules, test borderline edge cases, and inspect how additions and deductions interact under Japanese labor and tax statutes.
+          </p>
+
+          <form id="form-simulator" class="sim-form">
+            <div class="form-group">
+              <label for="sim-emp-id">Employee ID</label>
+              <input type="text" id="sim-emp-id" class="form-input" value="EMP-9403" required />
+            </div>
+
+            <div class="form-group">
+              <label for="sim-contract">Contract Classification</label>
+              <select id="sim-contract" class="form-input">
+                <option value="regular">Regular Employee (正社員)</option>
+                <option value="contract">Contract Worker (契約社員)</option>
+                <option value="part_time">Part-Time (パート / アルバイト)</option>
+                <option value="outsourcing">Outsourcing (業務委託)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="sim-commute">Commuting Allowance (JPY)</label>
+              <input type="number" id="sim-commute" class="form-input" value="165000" />
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Statutory tax-free cap: ¥150,000 / month</span>
+            </div>
+
+            <div class="form-group">
+              <label for="sim-telework">Telework Allowance (JPY)</label>
+              <input type="number" id="sim-telework" class="form-input" value="4500" />
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Standard: ¥250/day up to ¥5,000 / month</span>
+            </div>
+
+            <div class="form-group">
+              <label for="sim-housing">Housing Subsidy (JPY)</label>
+              <input type="number" id="sim-housing" class="form-input" value="0" />
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Disallowed for Outsourcing under Art. 4</span>
+            </div>
+
+            <div class="form-group">
+              <label for="sim-social">Social Insurance Deduction (JPY)</label>
+              <input type="number" id="sim-social" class="form-input" value="45000" />
+            </div>
+
+            <div class="form-group">
+              <label for="sim-resident">Resident Tax Deduction (JPY)</label>
+              <input type="number" id="sim-resident" class="form-input" value="5560" />
+            </div>
+
+            <div class="form-group">
+              <label for="sim-custom-ded">Custom Deductions (JPY)</label>
+              <input type="number" id="sim-custom-ded" class="form-input" value="0" />
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Capped at 20% of gross additions under Art. 24</span>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="margin-top: 10px;">
+              <span>⚡</span> Run Deterministic Evaluation
+            </button>
+          </form>
+        </div>
+
+        <!-- Result Side -->
+        <div class="glass-card">
+          <div class="section-title">
+            <span>📊</span>
+            <h2>Evaluation Diagnostic</h2>
+          </div>
+          <div id="sim-result-card">
+            <div style="text-align: center; color: var(--text-muted); padding: 40px;">
+              Submit the form on the left to inspect immediate sub-millisecond evaluation results.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- SUPERVISOR OVERRIDE MODAL -->
+  <div id="override-modal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div>
+          <h3 style="font-size: 1.25rem; font-weight: 700;">Supervisor Discretionary Override</h3>
+          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">Case ID: <span id="modal-case-id" style="font-family: var(--font-mono); color: var(--brand-accent);">--</span></p>
+        </div>
+        <div id="modal-status-badge" class="status-pill status-flagged">--</div>
+      </div>
+
+      <div class="modal-body">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px;">
+          <div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Employee</div>
+            <div id="modal-employee" style="font-weight: 600; font-size: 0.9rem;">--</div>
+          </div>
+          <div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Gross Additions</div>
+            <div id="modal-gross" style="font-family: var(--font-mono); color: var(--success); font-weight: 600;">--</div>
+          </div>
+          <div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Net Adjustment</div>
+            <div id="modal-net" style="font-family: var(--font-mono); color: var(--brand-accent); font-weight: 700;">--</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 6px;">Audit Trigger Reasons</div>
+          <div id="modal-policy-reasons" style="color: var(--warning); font-size: 0.85rem; font-family: var(--font-mono); line-height: 1.5; background: rgba(245, 158, 11, 0.08); padding: 10px; border-radius: 6px;">--</div>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 6px;">Statutory & Policy Basis</div>
+          <div id="modal-statutory-basis" style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.5;">--</div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 16px 0;" />
+
+        <div class="form-group">
+          <label for="modal-action-select">Supervisor Determination</label>
+          <select id="modal-action-select" class="form-input">
+            <option value="APPROVE">Approve with Exception Documentation</option>
+            <option value="REJECT">Confirm Rejection (Return to Employee)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="modal-decision-notes">Statutory Justification / Audit Notes</label>
+          <textarea id="modal-decision-notes" class="form-input" rows="3" placeholder="Provide detailed reasoning (e.g. Special executive board commuting authorization per Article 21 §2)"></textarea>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label for="modal-supervisor-id">Supervisor ID</label>
+            <input type="text" id="modal-supervisor-id" class="form-input" value="SUPV-LEAD-01" required />
+          </div>
+          <div class="form-group">
+            <label for="modal-signature">Digital Signature PIN / Code</label>
+            <input type="text" id="modal-signature" class="form-input" value="SIG-MGR-8891" required />
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="btn-cancel-modal" class="btn btn-secondary">Cancel</button>
+        <button id="btn-submit-override" class="btn btn-primary">Seal Override & Update Ledger</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI POLICY COPILOT DRAWER -->
+  <aside id="copilot-chat" class="copilot-drawer">
+    <div class="copilot-header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 1.25rem;">🤖</span>
+        <div>
+          <h4 style="font-size: 0.95rem; font-weight: 700;">Labor Policy Copilot</h4>
+          <span style="font-size: 0.7rem; color: var(--text-muted);">Japanese Labor Law & Internal Policy Grounded</span>
+        </div>
+      </div>
+      <button id="btn-close-copilot" class="btn btn-icon" style="border: none;">✕</button>
+    </div>
+
+    <div id="copilot-messages" class="copilot-messages">
+      <div class="copilot-bubble bot">
+        👋 Welcome to the <strong>Payroll Policy Copilot</strong>. I am grounded in Japanese Income Tax Act Art. 21, Labor Standards Act Art. 24, and corporate <em>Gyomu Itaku Kyuuyo Kitei</em> provisions.<br /><br />
+        You can ask me about commuting tax caps, outsourcing allowance rules, or ask for an explanation of any flagged claim.
+      </div>
+    </div>
+
+    <div class="copilot-input-bar">
+      <input type="text" id="copilot-input" class="copilot-input" placeholder="Ask about labor laws, commuting caps, or case rules..." />
+      <button id="btn-copilot-send" class="btn btn-primary" style="padding: 10px 14px;">Send</button>
+    </div>
+  </aside>
+
+  <!-- Notification Toast Container -->
+  <div id="toast" class="toast"></div>
+
+  <!-- App Script -->
+  <script src="app.js"></script>
+</body>
+</html>

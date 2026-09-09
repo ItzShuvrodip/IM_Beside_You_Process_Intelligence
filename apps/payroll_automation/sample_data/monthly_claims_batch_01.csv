@@ -1,0 +1,13 @@
+case_id,employee_id,employee_name,contract_type,base_salary,claimed_commute,telework_days,claimed_housing,custom_deduction,deduction_reason
+PI-BATCH-001,EMP-9401,Employee 01,regular,380000,18500,12,25000,0,
+PI-BATCH-002,EMP-9402,Employee 02,outsourcing,450000,22000,15,0,5000,Monthly IT equipment lease deduction
+PI-BATCH-003,EMP-9403,Employee 03,regular,320000,165000,8,30000,0,
+PI-BATCH-004,EMP-9404,Employee 04,contract,280000,12000,10,20000,80000,Advance salary repayment
+PI-BATCH-005,EMP-9405,Employee 05,outsourcing,420000,14000,6,25000,0,
+PI-BATCH-006,EMP-9406,Employee 06,regular,310000,14000,6,20000,12000,Company Housing Maintenance
+PI-BATCH-007,EMP-9407,Employee 07,outsourcing,325000,16000,7,0,0,
+PI-BATCH-008,EMP-9408,Employee 08,regular,340000,18000,8,20000,0,
+PI-BATCH-009,EMP-9409,Employee 09,contract,355000,20000,9,0,0,
+PI-BATCH-010,EMP-9410,Employee 10,regular,370000,22000,10,20000,12000,Company Housing Maintenance
+PI-BATCH-011,EMP-9411,Employee 11,outsourcing,385000,24000,11,0,0,
+PI-BATCH-012,EMP-9412,Employee 12,regular,400000,26000,12,20000,0,

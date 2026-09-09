@@ -231,4 +231,18 @@
 - **3-Tier Financial Sensitivity Scenarios (Conservative, Base Case, Optimistic):**
   - Incorporates annual volume, active cycle duration, cognitive lookup dwell, standardization-adjusted STP rate, operator spread adoption, risk-adjusted exception review latency, loaded wage (¥3,500/hr), Capex (¥1,400,000), and annual Opex (¥140,000/yr).
 
+---
+
+## Standalone Enterprise Payroll Deduction Automation Suite Decoupling
+
+### Objectives
+- Decouple Step 3 operational automation tool (`payroll_deduction_adjustment`) out of the main HTML dashboard into a dedicated, standalone enterprise full-stack web and desktop project (`apps/payroll_automation/`).
+- Preserve the primary HTML dashboard (`deliverables/automation_dashboard.html`) strictly as the **Process Intelligence & Telemetry Mining Platform** (Executive Cockpit, Directly-Follows Graph, Sequence Architecture, Economic ROI Model, and Work Units Telemetry) with a dedicated launchpad card.
+- Build production-grade standalone suite architecture:
+  - **Backend (`apps/payroll_automation/backend/`):** Dedicated FastAPI service on port 8500 with deterministic statutory evaluation, multilingual CSV/Excel batch normalizer, AI Labor Policy Copilot grounded in Japanese labor laws (Income Tax Act Art. 21, Labor Standards Act Art. 24, and `gyomu_itaku_kyuuyo_kitei` Art. 4), human-in-the-loop exception review desk with digital supervisor signatures, and live HRIS/ERP staging.
+  - **Frontend (`apps/payroll_automation/frontend/`):** Reactive, high-performance web and desktop UI with dark/light themes, drag-and-drop batch ingestion, real-time STP telemetry, cryptographic SHA-256 audit ledger, and interactive claim simulation sandbox.
+  - **Launchers:** `apps/payroll_automation/run_app.py` and `apps/payroll_automation/launch_payroll_app.bat`.
+  - **Test Suite:** `tests/test_standalone_app.py` expanding test coverage to 40/40 passing unit and integration tests with zero Pyrefly errors.
+
+
 
