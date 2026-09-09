@@ -4,7 +4,7 @@
 **Role:** Forward Deployed Engineer (FDE) Candidate  
 **Submission Date:** September 2026  
 **Client Project:** Desktop Operation Log Mining & Workflow Automation  
-**Repository:** `d:/IMBY`
+**Repository:** https://github.com/ItzShuvrodip/IM_Beside_You_Process_Intelligence
 
 ---
 

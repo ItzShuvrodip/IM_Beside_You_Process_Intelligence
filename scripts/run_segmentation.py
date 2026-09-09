@@ -5,18 +5,21 @@ from datetime import datetime
 
 if hasattr(sys.stdout, "reconfigure"):
     getattr(sys.stdout, "reconfigure")(encoding="utf-8")
-sys.path.insert(0, "d:/IMBY")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
+from src.config import DATASET_B_DIR, DELIVERABLES_DIR, SEGMENTS_FILE, MULTIMODAL_MODEL_PATH
 from src.segmentation.hybrid_segmenter import HybridSegmenter
 
 
 def main():
-    b_dir = Path("d:/IMBY/Datasets/dataset_b")
-    deliverables_dir = Path("d:/IMBY/deliverables")
+    b_dir = DATASET_B_DIR
+    deliverables_dir = DELIVERABLES_DIR
     deliverables_dir.mkdir(parents=True, exist_ok=True)
-    out_file = deliverables_dir / "segments.jsonl"
+    out_file = SEGMENTS_FILE
 
-    model_path = Path("d:/IMBY/models/multimodal_process_net.pt")
+    model_path = MULTIMODAL_MODEL_PATH
     segmenter = HybridSegmenter(
         dwell_gap_seconds=24.0,
         min_segment_seconds=6.0,

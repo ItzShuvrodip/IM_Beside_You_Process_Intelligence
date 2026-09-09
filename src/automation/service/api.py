@@ -14,8 +14,7 @@ from src.automation.service.decision_service import PayrollDecisionService
 from src.automation.domain.payroll_rules import SAMPLE_BATCH, POLICY_CONFIG, POLICY_METADATA
 from src.analysis.process_mining import ProcessMiningEngine
 from src.analysis.roi_model import rank_automation_opportunities
-
-PROJECT_ROOT = Path("d:/IMBY")
+from src.config import PROJECT_ROOT
 
 app = FastAPI(
     title="Enterprise Process Automation & Decision Platform",

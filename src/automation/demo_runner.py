@@ -4,7 +4,9 @@ from pathlib import Path
 
 if hasattr(sys.stdout, "reconfigure"):
     getattr(sys.stdout, "reconfigure")(encoding="utf-8")
-sys.path.insert(0, "d:/IMBY")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.automation.service.decision_service import PayrollDecisionService as PayrollAdjustmentAutomationEngine
 

@@ -7,7 +7,7 @@ This repository delivers an enterprise-grade solution for recovering business pr
 ## 📁 Repository Structure
 
 ```
-d:/IMBY/
+IMBY/ (Repository Root)
 ├── Datasets/                 # Operation log datasets
 │   ├── README.md             # Original task specification
 │   ├── DATA_SCHEMA.md        # Event schema documentation

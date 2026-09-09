@@ -10,11 +10,14 @@ if str(PROJECT_ROOT) not in sys.path:
 from src.ingestion.loader import SessionDataLoader
 
 
+from src.config import DATASETS_DIR, DATASET_A_DIR, DATASET_B_DIR
+
+
 class TestSessionDataLoader(unittest.TestCase):
     def setUp(self):
-        self.data_dir = Path("d:/IMBY/Datasets")
-        self.a_dir = self.data_dir / "dataset_a"
-        self.b_dir = self.data_dir / "dataset_b"
+        self.data_dir = DATASETS_DIR
+        self.a_dir = DATASET_A_DIR
+        self.b_dir = DATASET_B_DIR
 
     def test_load_dataset_a_session(self):
         sessions = [d for d in self.a_dir.iterdir() if d.is_dir()]

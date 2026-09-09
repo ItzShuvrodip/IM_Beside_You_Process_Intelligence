@@ -1,9 +1,14 @@
-import os
-import csv
+import sys
 import json
-import glob
+import csv
 from pathlib import Path
 from datetime import datetime
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.config import SEGMENTS_FILE, DATASET_B_DIR, AUDIT_CSV_FILE
 
 SESSION_TO_OPERATOR = {
     "ses_20260701-164424-CHAITANYA0BCF": "user_b_01",
@@ -41,9 +46,9 @@ def find_closest_screenshot(session_dir: Path, target_ms: int) -> str:
     return best_file or "N/A"
 
 def main():
-    seg_path = Path("d:/IMBY/deliverables/segments.jsonl")
-    dataset_b_dir = Path("d:/IMBY/Datasets/dataset_b")
-    out_csv = Path("d:/IMBY/deliverables/dataset_b_audit.csv")
+    seg_path = SEGMENTS_FILE
+    dataset_b_dir = DATASET_B_DIR
+    out_csv = AUDIT_CSV_FILE
 
     with open(seg_path, "r", encoding="utf-8") as f:
         all_segments = [json.loads(line) for line in f if line.strip()]

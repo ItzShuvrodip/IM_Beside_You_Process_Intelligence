@@ -5,8 +5,11 @@ import io
 from pathlib import Path
 from datetime import datetime, timezone
 
-PROJECT_ROOT = Path("d:/IMBY")
-sys.path.insert(0, str(PROJECT_ROOT))
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.config import PROJECT_ROOT
 
 from src.automation.service.decision_service import PayrollDecisionService as PayrollAdjustmentAutomationEngine
 from src.automation.demo_runner import SAMPLE_BATCH

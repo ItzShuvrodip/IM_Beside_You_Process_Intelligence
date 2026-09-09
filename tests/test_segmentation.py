@@ -12,11 +12,14 @@ from src.segmentation.hybrid_segmenter import HybridSegmenter as SegmentationPip
 from src.evaluation.evaluator import SegmentationEvaluator
 
 
+from src.config import DATASETS_DIR, DATASET_A_DIR, DATASET_B_DIR
+
+
 class TestSegmentation(unittest.TestCase):
     def setUp(self):
-        self.data_dir = Path("d:/IMBY/Datasets")
-        self.a_dir = self.data_dir / "dataset_a"
-        self.b_dir = self.data_dir / "dataset_b"
+        self.data_dir = DATASETS_DIR
+        self.a_dir = DATASET_A_DIR
+        self.b_dir = DATASET_B_DIR
         self.pipeline = SegmentationPipeline(dwell_gap_seconds=20.0)
 
     def test_segmentation_dataset_a(self):

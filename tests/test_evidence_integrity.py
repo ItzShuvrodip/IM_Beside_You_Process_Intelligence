@@ -19,6 +19,7 @@ from src.ingestion.models import Segment, GroundTruthExecution, RawEvent
 from src.analysis.process_mining import ProcessMiningEngine
 from src.analysis.roi_model import ROIPrioritizationModel
 from src.automation.domain.payroll_rules import validate_payroll_item, POLICY_METADATA, POLICY_CONFIG
+from src.config import SEGMENTS_FILE
 
 
 class TestEvidenceIntegrity(unittest.TestCase):
@@ -164,7 +165,7 @@ class TestEvidenceIntegrity(unittest.TestCase):
         """
         Manually verified Gold Audit Set (stratified sample of confirmed segments in Dataset B)
         """
-        seg_file = Path("d:/IMBY/deliverables/segments.jsonl")
+        seg_file = SEGMENTS_FILE
         self.assertTrue(seg_file.exists())
         segments = []
         with open(seg_file, "r", encoding="utf-8") as f:
