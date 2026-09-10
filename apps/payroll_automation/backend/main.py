@@ -1,11 +1,4 @@
-"""
-Standalone Enterprise Payroll Automation Engine - FastAPI Application
-Provides enterprise API services for:
-- Deterministic Payroll Claims Verification & Statutory Compliance
-- AI Policy Copilot & Autonomous Exception Analysis
-- HRIS / ERP Staging & Batch Export
-- Tamper-Evident SHA-256 Audit Trail Inspection
-"""
+"""FastAPI backend for payroll validation, rule simulation, and ERP export."""
 
 import sys
 import os
@@ -29,8 +22,6 @@ from pydantic import BaseModel, Field
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
-
-from src.config import PROJECT_ROOT
 from src.automation.service.decision_service import PayrollDecisionService
 from src.automation.domain.payroll_rules import BATCH_CASES, POLICY_CONFIG, POLICY_METADATA
 from src.automation.adapters.hr_system import MockHRSystemAdapter
@@ -64,10 +55,10 @@ _CURRENT_CASES: List[Dict[str, Any]] = []
 _STAGED_ERP_RECORDS: List[Dict[str, Any]] = []
 
 
-def initialize_app_data():
+def initialize_app_data(force: bool = False):
     """Bootstraps default verified production claims (120 records)."""
     global _CURRENT_CASES
-    if not _CURRENT_CASES:
+    if not _CURRENT_CASES or force:
         csv_file = Path(__file__).resolve().parent.parent / "sample_data" / "monthly_claims_batch_01.csv"
         if csv_file.exists():
             with open(csv_file, "r", encoding="utf-8") as f:

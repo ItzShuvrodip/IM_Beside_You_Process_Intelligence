@@ -8204,35 +8204,25 @@ function generateHash(str) {
 async function handleFileUpload(file) {
     showToast(`Ingesting ${file.name}...`, 'info');
 
-    if (state.isApiLive) {
-        const formData = new FormData();
-        formData.append('file', file);
-        try {
-            const res = await fetch('/api/upload_csv', { method: 'POST', body: formData });
-            if (res.ok) {
-                const data = await res.json();
-                state.cases = data.results || data.evaluated_records || [];
-                renderAllViews();
-                showToast(`Evaluated ${data.rows_ingested || data.parsed_rows} records in sub-millisecond cycle.`, 'success');
-                return;
-            }
-        } catch (e) {
-            console.warn('Backend upload failed, parsing locally:', e);
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+        const res = await fetch('/api/upload_csv', { method: 'POST', body: formData });
+        if (res.ok) {
+            const data = await res.json();
+            state.cases = data.results || data.evaluated_records || [];
+            renderAllViews();
+            showToast(`Evaluated ${data.rows_ingested || data.parsed_rows} records via Decision API.`, 'success');
+            return;
+        } else {
+            const err = await res.json().catch(() => ({}));
+            showToast(`API Evaluation Error: ${err.detail || 'Server rejected file'}`, 'danger');
+            return;
         }
+    } catch (e) {
+        console.error('Backend upload failed:', e);
+        showToast('Decision API is offline on port 8500. Please start the backend service to evaluate claims.', 'danger');
     }
-
-    // Local in-browser CSV parsing fallback
-    const text = await file.text();
-    const rows = parseCsvText(text);
-    if (rows.length === 0) {
-        showToast('Unable to parse valid records from CSV file.', 'danger');
-        return;
-    }
-
-    const evaluated = rows.map((r, i) => evaluateSingleClaimDeterministic(r, i + 1));
-    state.cases = evaluated;
-    renderAllViews();
-    showToast(`Locally evaluated ${rows.length} claims in 2.1ms.`, 'success');
 }
 
 function parseCsvText(text) {
@@ -8251,103 +8241,7 @@ function parseCsvText(text) {
     return result;
 }
 
-// Local Deterministic Statutory Evaluator
-function evaluateSingleClaimDeterministic(r, idx) {
-    const salary = Number(r.base_salary || r.salary || 320000);
-    const commute = Number(r.claimed_commute || r.commute || 0);
-    const teleDays = Number(r.telework_days || r.telework || 0);
-    const housing = Number(r.claimed_housing || r.housing || 0);
-    const custom = Number(r.custom_deduction || r.deduction || 0);
-    const reason = r.deduction_reason || r.reason || '';
-    const contract = (r.contract_type || 'regular').toLowerCase();
-
-    let isAppr = true;
-    const notes = [];
-
-    // Commuting tax exemption limit
-    const appCommute = Math.min(commute, 150000);
-    if (commute > 150000) {
-        isAppr = false;
-        notes.push(`Commute exceeds statutory tax-exempt cap (${commute} > 150000 JPY)`);
-    }
-
-    // Telework rate
-    const appTele = Math.min(teleDays * 250, 5000);
-
-    // Housing allowance
-    let appHousing = 0;
-    if (contract === 'outsourcing' || contract === 'part_time') {
-        if (housing > 0) {
-            isAppr = false;
-            notes.push(`Housing subsidy not permissible for ${contract} per article 4`);
-        }
-    } else {
-        appHousing = Math.min(housing, 30000);
-    }
-
-    // Deductions
-    let soc = 0;
-    let emp = 0;
-    if (contract === 'regular' || contract === 'contract') {
-        soc = Math.round(salary * 0.152);
-        emp = Math.round(salary * 0.006);
-    }
-
-    if (custom > salary * 0.20) {
-        isAppr = false;
-        notes.push(`Custom deduction exceeds 20% of base salary (${custom} JPY) - requires supervisor authorization`);
-    }
-    if (custom > 0 && !reason) {
-        isAppr = false;
-        notes.push(`Custom deduction missing required documentation reason`);
-    }
-
-    const gross = appCommute + appTele + appHousing;
-    const totalDed = soc + emp + custom;
-
-    let status = 'AUTO_APPROVED';
-    let decisionNote = 'AUTO_APPROVED: Passed all statutory and corporate policy validation checks';
-    if (!isAppr) {
-        if (notes.some(n => n.includes('article 4'))) {
-            status = 'REJECTED';
-            decisionNote = 'REJECTED: ' + notes.join(' | ');
-        } else {
-            status = 'FLAGGED_FOR_REVIEW';
-            decisionNote = 'FLAG_REVIEW: ' + notes.join(' | ');
-        }
-    }
-
-    return {
-        case_id: r.case_id || `PI-EVAL-${String(idx).padStart(3, '0')}`,
-        status: status,
-        decision_notes: decisionNote,
-        input_data: {
-            case_id: r.case_id || `PI-EVAL-${String(idx).padStart(3, '0')}`,
-            employee_id: r.employee_id || `EMP-94${String(idx).padStart(2, '0')}`,
-            employee_name: r.employee_name || `Employee ${String(idx).padStart(2, '0')}`,
-            contract_type: contract,
-            base_salary: salary,
-            claimed_commute: commute,
-            telework_days: teleDays,
-            claimed_housing: housing,
-            custom_deduction: custom,
-            deduction_reason: reason
-        },
-        calculated_details: {
-            approved_commute: appCommute,
-            approved_telework: appTele,
-            approved_housing: appHousing,
-            social_insurance_deduction: soc,
-            employment_insurance_deduction: emp,
-            custom_deduction: custom,
-            total_gross_addition: gross,
-            total_deduction: totalDed,
-            net_adjustment: gross - totalDed,
-            policy_version: "2026.04-v1.2"
-        },
-        audit_id: `AUD-${String(Math.floor(10000 + Math.random() * 90000))}`
-    };
-}
+// Batch Sampling
 
 // Sample Batches
 function loadSampleBatch(batchNum) {
@@ -8547,7 +8441,7 @@ function addCopilotMessage(htmlContent, senderClass) {
 }
 
 // Single Claim Simulator Form Submit
-function handleSimulatorSubmit(e) {
+async function handleSimulatorSubmit(e) {
     e.preventDefault();
     const claim = {
         case_id: `PI-SIM-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -8562,40 +8456,57 @@ function handleSimulatorSubmit(e) {
         deduction_reason: "Interactive simulation verification"
     };
 
-    const res = evaluateSingleClaimDeterministic(claim, state.cases.length + 1);
-    state.cases.unshift(res);
-    renderAllViews();
+    try {
+        const resApi = await fetch('/api/evaluate_case', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(claim)
+        });
+        if (!resApi.ok) {
+            const err = await resApi.json().catch(() => ({}));
+            showToast(`Evaluation error: ${err.detail || 'Service error'}`, 'danger');
+            return;
+        }
+        const data = await resApi.json();
+        const res = data.result;
+        state.cases.unshift(res);
+        renderAllViews();
 
-    // Render diagnostic card in simulator view
-    const resultCard = document.getElementById('sim-result-card');
-    if (resultCard) {
-        const isJa = state.lang === 'ja';
+        // Render diagnostic card in simulator view
+        const resultCard = document.getElementById('sim-result-card');
+        if (resultCard) {
+            const isJa = state.lang === 'ja';
+            const isApproved = res.status === 'AUTO_APPROVED';
+            const noteHeading = isJa ? '法令監査メモ・判定根拠:' : 'Statutory Audit Notes:';
+            const lblCommute = isJa ? '認可通勤費' : 'Approved Commute';
+            const lblTele = isJa ? '認可テレワーク手当' : 'Approved Telework';
+            const lblHouse = isJa ? '認可住宅手当' : 'Approved Housing';
+            const lblNet = isJa ? '差引支給調整額' : 'Net Adjustment';
+
+            resultCard.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                    <span style="font-family: var(--font-mono); font-weight: 700; color: var(--brand-accent);">${res.case_id}</span>
+                    ${formatStatusPill(res.status)}
+                </div>
+                <div style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 12px;">
+                    <strong>${noteHeading}</strong><br />
+                    ${res.decision_notes}
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-family: var(--font-mono); font-size: 0.8rem; background: var(--bg-surface-elevated); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+                    <div>${lblCommute}: ¥${(res.calculated_details.approved_commute || 0).toLocaleString()}</div>
+                    <div>${lblTele}: ¥${(res.calculated_details.approved_telework || 0).toLocaleString()}</div>
+                    <div>${lblHouse}: ¥${(res.calculated_details.approved_housing || 0).toLocaleString()}</div>
+                    <div style="font-weight: 700; color: var(--brand-accent);">${lblNet}: ¥${(res.calculated_details.net_adjustment || 0).toLocaleString()}</div>
+                </div>
+            `;
+        }
+
         const isApproved = res.status === 'AUTO_APPROVED';
-        const noteHeading = isJa ? '法令監査メモ・判定根拠:' : 'Statutory Audit Notes:';
-        const lblCommute = isJa ? '認可通勤費' : 'Approved Commute';
-        const lblTele = isJa ? '認可テレワーク手当' : 'Approved Telework';
-        const lblHouse = isJa ? '認可住宅手当' : 'Approved Housing';
-        const lblNet = isJa ? '差引支給調整額' : 'Net Adjustment';
-
-        resultCard.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                <span style="font-family: var(--font-mono); font-weight: 700; color: var(--brand-accent);">${res.case_id}</span>
-                ${formatStatusPill(res.status)}
-            </div>
-            <div style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 12px;">
-                <strong>${noteHeading}</strong><br />
-                ${res.decision_notes}
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-family: var(--font-mono); font-size: 0.8rem; background: var(--bg-surface-elevated); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
-                <div>${lblCommute}: ¥${(res.calculated_details.approved_commute || 0).toLocaleString()}</div>
-                <div>${lblTele}: ¥${(res.calculated_details.approved_telework || 0).toLocaleString()}</div>
-                <div>${lblHouse}: ¥${(res.calculated_details.approved_housing || 0).toLocaleString()}</div>
-                <div style="font-weight: 700; color: var(--brand-accent);">${lblNet}: ¥${(res.calculated_details.net_adjustment || 0).toLocaleString()}</div>
-            </div>
-        `;
+        showToast(`Evaluated claim ${res.case_id}: ${res.status}`, isApproved ? 'success' : 'warning');
+    } catch (err) {
+        console.error('Simulator evaluation failed:', err);
+        showToast('Decision API is offline on port 8500. Please start the backend service.', 'danger');
     }
-
-    showToast(`Evaluated claim ${res.case_id}: ${res.status}`, isApproved ? 'success' : 'warning');
 }
 
 // Export Operations

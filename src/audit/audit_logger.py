@@ -1,4 +1,5 @@
 import json
+import hashlib
 import logging
 from pathlib import Path
 from typing import Dict, Any, List, Optional
@@ -6,16 +7,46 @@ from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 
+GENESIS_HASH = "0" * 64
+
 
 class AuditLogger:
-    """
-    Immutable, structured audit logging system for shadow-mode decision assistance.
-    Captures policy provenance, evaluated rule trails, input parameters,
-    and human supervisor overrides.
-    """
+    """Append-only audit logger with SHA-256 hash chaining."""
     def __init__(self, log_path: Optional[Path] = None):
         self.log_path = Path(log_path) if log_path else (Path(__file__).resolve().parent.parent.parent / "deliverables" / "audit_trail.jsonl")
         self.records: List[Dict[str, Any]] = []
+        self.records_count = 0
+        self.last_hash = GENESIS_HASH
+        self._initialize_from_disk()
+
+    def _initialize_from_disk(self) -> None:
+        """Loads existing ledger tail to resume monotonic numbering and hash chain."""
+        if not self.log_path.exists():
+            return
+        try:
+            count = 0
+            with open(self.log_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line:
+                        count += 1
+                        try:
+                            data = json.loads(line)
+                            if "entry_hash" in data:
+                                self.last_hash = data["entry_hash"]
+                        except Exception:
+                            pass
+            self.records_count = count
+        except Exception as e:
+            logger.warning(f"Could not read existing audit trail for hash chain: {e}")
+            self.records_count = 0
+
+    def _compute_hash(self, payload: Dict[str, Any]) -> str:
+        serialized = json.dumps(payload, sort_keys=True, ensure_ascii=False)
+        hasher = hashlib.sha256()
+        hasher.update(self.last_hash.encode("utf-8"))
+        hasher.update(serialized.encode("utf-8"))
+        return hasher.hexdigest()
 
     def log_evaluation(
         self,
@@ -27,8 +58,10 @@ class AuditLogger:
         calculated_details: Dict[str, Any],
         audit_trail: List[Dict[str, Any]]
     ) -> Dict[str, Any]:
+        self.records_count += 1
+        audit_num = self.records_count
         record = {
-            "audit_id": f"AUD-{len(self.records) + 1:05d}",
+            "audit_id": f"AUD-{audit_num:05d}",
             "case_id": case_id,
             "timestamp_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "policy_version": policy_version,
@@ -38,8 +71,13 @@ class AuditLogger:
             "input_data": input_data,
             "calculated_details": calculated_details,
             "rule_audit_trail": audit_trail,
-            "supervisor_override": None
+            "supervisor_override": None,
+            "prev_hash": self.last_hash
         }
+        entry_hash = self._compute_hash(record)
+        record["entry_hash"] = entry_hash
+        self.last_hash = entry_hash
+
         self.records.append(record)
         self._append_to_disk(record)
         return record
@@ -62,13 +100,17 @@ class AuditLogger:
                     "justification": reason
                 }
                 rec["supervisor_override"] = override_data
-                # Write only the override delta — avoids duplicating the full record in the JSONL log
                 delta = {
                     "audit_id": rec["audit_id"],
                     "case_id": case_id,
                     "record_type": "SUPERVISOR_OVERRIDE",
-                    "supervisor_override": override_data
+                    "supervisor_override": override_data,
+                    "prev_hash": self.last_hash
                 }
+                entry_hash = self._compute_hash(delta)
+                delta["entry_hash"] = entry_hash
+                self.last_hash = entry_hash
+
                 self._append_to_disk(delta)
                 return rec
         return None

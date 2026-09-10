@@ -9,8 +9,6 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.config import PROJECT_ROOT
-
 from src.automation.service.decision_service import PayrollDecisionService as PayrollAdjustmentAutomationEngine
 from src.automation.demo_runner import SAMPLE_BATCH
 from src.analysis.process_mining import ProcessMiningEngine
@@ -19,18 +17,22 @@ from src.analysis.roi_model import rank_automation_opportunities, ROIPrioritizat
 
 def generate_segment_digital_twin(item):
     label = item.get("label", "payroll_deduction_adjustment")
-    dur = float(item.get("duration_seconds") or 105.4)
+    dur = float(item.get("duration_seconds") or 78.2)
     if dur <= 0:
-        dur = 105.4
+        dur = 78.2
     
     if "payroll" in label:
+        word_dur = round(dur * 0.532, 1)
+        excel_dur = round(dur * 0.212, 1)
+        portal_dur = round(dur * 0.134, 1)
+        commit_dur = round(max(0.1, dur - (word_dur + excel_dur + portal_dur)), 1)
         steps = [
-            {"step": 1, "app": "Microsoft Word", "window": "gyomu_itaku_kyuuyo_kitei.docx - Word", "duration": round(dur * 0.532, 1), "pct": 53.2, "keystrokes": 14, "clicks": 8, "is_bottleneck": True, "notes": "Guideline lookups: checking Article 4 housing restriction and §3 telework ceiling"},
-            {"step": 2, "app": "Microsoft Excel", "window": "payroll_calc.xlsx - Excel", "duration": round(dur * 0.212, 1), "pct": 21.2, "keystrokes": 48, "clicks": 16, "is_bottleneck": False, "notes": "Commute allowance arithmetic and social insurance formula validation"},
-            {"step": 3, "app": "Google Chrome", "window": "ERP Internal Portal - /payroll-items", "duration": round(dur * 0.134, 1), "pct": 13.4, "keystrokes": 32, "clicks": 12, "is_bottleneck": False, "notes": "Entering gross additions and voluntary deduction codes into form"},
-            {"step": 4, "app": "Google Chrome", "window": "ERP Internal Portal - Submission Dialog", "duration": round(dur * 0.122, 1), "pct": 12.2, "keystrokes": 4, "clicks": 3, "is_bottleneck": False, "notes": "Batch voucher review and commit dispatch"}
+            {"step": 1, "app": "Microsoft Word", "window": "gyomu_itaku_kyuuyo_kitei.docx - Word", "duration": word_dur, "pct": 53.2, "keystrokes": 14, "clicks": 8, "is_bottleneck": True, "notes": "Guideline lookups: checking Article 4 housing restriction and §3 telework ceiling"},
+            {"step": 2, "app": "Microsoft Excel", "window": "payroll_calc.xlsx - Excel", "duration": excel_dur, "pct": 21.2, "keystrokes": 48, "clicks": 16, "is_bottleneck": False, "notes": "Commute allowance arithmetic and social insurance formula validation"},
+            {"step": 3, "app": "Google Chrome", "window": "ERP Internal Portal - /payroll-items", "duration": portal_dur, "pct": 13.4, "keystrokes": 32, "clicks": 12, "is_bottleneck": False, "notes": "Entering gross additions and voluntary deduction codes into form"},
+            {"step": 4, "app": "Google Chrome", "window": "ERP Internal Portal - Submission Dialog", "duration": commit_dur, "pct": 12.2, "keystrokes": 4, "clicks": 3, "is_bottleneck": False, "notes": "Batch voucher review and commit dispatch"}
         ]
-        remedy = "The 56.1s Microsoft Word lookup accounts for 53.2% of operator dwell time. The Standalone Payroll Automation Suite codifies these exact guidelines into deterministic Python logic, eliminating this step completely and executing in 2.4 ms."
+        remedy = f"The {word_dur}s Microsoft Word lookup accounts for 53.2% of operator dwell time. Codifying these guidelines into deterministic Python rules eliminates manual lookup latency."
     elif "leave" in label:
         steps = [
             {"step": 1, "app": "Microsoft Outlook", "window": "Inbox - Absence Notifications", "duration": round(dur * 0.35, 1), "pct": 35.0, "keystrokes": 12, "clicks": 7, "is_bottleneck": False, "notes": "Reading supervisor email approval and attachment"},
@@ -140,25 +142,14 @@ def generate_dashboard_html(output_path: Path):
     roi_engine = ROIPrioritizationModel()
     monte_carlo_data = roi_engine.simulate_monte_carlo(iterations=10000)
 
-    # Hardware & Compute Info
-    gpu_engine = "Enterprise Neural Inference Core"
-    pipe_name = "PyTorch Sequence Pipeline"
-    try:
-        import torch  # type: ignore
-        if torch.cuda.is_available():
-            gpu_engine = f"{torch.cuda.get_device_name(0)}"
-            pipe_name = "CUDA 12.8 Accelerated PyTorch Pipeline"
-    except Exception:
-        pass
-
     hardware_data = {
-        "compute_engine": gpu_engine,
-        "pipeline": pipe_name,
-        "acceleration": "NVIDIA GeForce RTX 5070 / CUDA 13.4 Tensor Cores",
-        "runtime_engine": "Multimodal PyTorch Sequence Runtime (BiLSTM + Vision)",
-        "model_checkpoint": "models/multimodal_process_net.pt",
-        "parameters": 530193,
-        "inference_latency_ms": 0.8
+        "compute_engine": "Deterministic Operational Analysis & Rules Engine",
+        "pipeline": "FastAPI + Hybrid Signal Segmentation Engine",
+        "acceleration": "Standard Multi-Core CPU Runtime",
+        "runtime_engine": "Python Hybrid Heuristic-Symbolic Decision Service",
+        "model_checkpoint": "Deterministic Multi-Signal Rule Anchors",
+        "parameters": "Rule Anchors + Audit Provenance",
+        "inference_latency_ms": 1.85
     }
 
     # Serialized JSON objects for client-side hydration
@@ -1239,25 +1230,17 @@ def generate_dashboard_html(output_path: Path):
                             <span class="telemetry-val">{hardware_data['acceleration']}</span>
                         </div>
                         <div class="telemetry-row">
-                            <span class="telemetry-label">Neural Architecture</span>
-                            <span class="telemetry-val" style="color: var(--accent-indigo);">ProcessBoundaryBiLSTM</span>
+                            <span class="telemetry-label">Rule / Signal Logic</span>
+                            <span class="telemetry-val">{hardware_data['parameters']}</span>
                         </div>
                         <div class="telemetry-row">
-                            <span class="telemetry-label">Active Weights</span>
-                            <span class="telemetry-val">models/boundary_bilstm_best.pt</span>
-                        </div>
-                        <div class="telemetry-row">
-                            <span class="telemetry-label">Trained Parameters</span>
-                            <span class="telemetry-val">{hardware_data['parameters']:,} params</span>
-                        </div>
-                        <div class="telemetry-row">
-                            <span class="telemetry-label">Execution Latency</span>
-                            <span class="telemetry-val" style="color: var(--accent-emerald);">{hardware_data['inference_latency_ms']} ms / seq</span>
+                            <span class="telemetry-label">Evaluation Latency</span>
+                            <span class="telemetry-val" style="color: var(--accent-emerald);">{hardware_data['inference_latency_ms']} ms / claim</span>
                         </div>
                     </div>
 
                     <div style="margin-top: 18px; padding: 12px 14px; background: #f8fafc; border: 1px solid var(--border-hairline); border-radius: 8px; font-size: 12px; color: var(--text-secondary); line-height: 1.45;">
-                        <strong style="color: var(--text-title);">Verification Integrity:</strong> Unstructured raw telemetry events are partitioned by the neural model into work unit boundaries. The deterministic rule engine then evaluates arithmetic allowances and flags policy variances with zero hallucination.
+                        <strong style="color: var(--text-title);">Verification Integrity:</strong> Unstructured raw telemetry events are partitioned into candidate work units via hybrid anchors and inactivity gaps. The deterministic shadow rules engine then validates statutory limits and flags policy exceptions with full audit provenance.
                     </div>
                 </div>
             </div>

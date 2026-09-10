@@ -71,6 +71,7 @@ class SegmentationEvaluator:
         matched_preds = set()
         matched_gts = set()
         matched_ious = []
+        matched_pairs = []
         label_matches = 0
 
         for iou, p_idx, g_idx in candidate_pairs:
@@ -85,6 +86,7 @@ class SegmentationEvaluator:
             gt_obj = valid_gt[g_idx]
             gt_label = canonicalize_label(gt_obj.family_name or gt_obj.code)
 
+            matched_pairs.append((pred_label, gt_label))
             if pred_label == gt_label:
                 label_matches += 1
 
@@ -115,5 +117,6 @@ class SegmentationEvaluator:
             "gt_count": n_gt,
             "pred_count": n_pred,
             "matches": n_matches,
-            "label_matches": label_matches
+            "label_matches": label_matches,
+            "matched_label_pairs": matched_pairs
         }

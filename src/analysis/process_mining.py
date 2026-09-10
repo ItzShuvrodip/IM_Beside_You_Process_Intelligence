@@ -6,14 +6,11 @@ from collections import defaultdict, Counter
 from datetime import datetime
 from src.ingestion.loader import SessionDataLoader
 from src.ingestion.models import RawEvent
+from src.config import DATASET_B_DIR, SEGMENTS_FILE
 
 
 class ProcessMiningEngine:
-    """
-    Enterprise Process Mining & Conformance Engine.
-    Discovers Directly-Follows Graphs (DFG), bottleneck transition latencies,
-    and intra-process execution variants from desktop telemetry.
-    """
+    """Extracts Directly-Follows Graphs, transition latencies, and variants from telemetry."""
 
     def __init__(self, dataset_path: Optional[Path] = None):
         self.dataset_path = Path(dataset_path) if dataset_path else None
@@ -42,7 +39,7 @@ class ProcessMiningEngine:
                         dt_e = datetime.fromisoformat(str(e_str).replace("Z", "+00:00"))
                         session_intervals[sid].append((dt_s, dt_e))
 
-        target = self.dataset_path or (Path(__file__).resolve().parent.parent.parent / "Datasets" / "dataset_b")
+        target = self.dataset_path or DATASET_B_DIR
         if not target.exists():
             target = Path(__file__).resolve().parent.parent.parent / "data" / "dataset_b"
         sessions = sorted([d for d in target.iterdir() if d.is_dir()]) if target.exists() else []
@@ -160,7 +157,7 @@ class ProcessMiningEngine:
                         dt_e = datetime.fromisoformat(str(e_str).replace("Z", "+00:00"))
                         session_intervals[sid].append((dt_s, dt_e))
 
-        target = self.dataset_path or (Path(__file__).resolve().parent.parent.parent / "Datasets" / "dataset_b")
+        target = self.dataset_path or DATASET_B_DIR
         if not target.exists():
             target = Path(__file__).resolve().parent.parent.parent / "data" / "dataset_b"
         sessions = sorted([d for d in target.iterdir() if d.is_dir()]) if target.exists() else []
@@ -223,8 +220,11 @@ class ProcessMiningEngine:
         Extracts process-level DFG metrics and application dwell times for segmented processes.
         Explicitly separates overall dataset dwell from process-attributed segment dwell.
         """
+        if dataset_path is not None:
+            self.dataset_path = Path(dataset_path)
+
         if segments is None:
-            seg_file = Path(__file__).resolve().parent.parent.parent / "deliverables" / "segments.jsonl"
+            seg_file = SEGMENTS_FILE
             if seg_file.exists():
                 segments = []
                 with open(seg_file, "r", encoding="utf-8") as f:

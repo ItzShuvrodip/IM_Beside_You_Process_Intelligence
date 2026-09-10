@@ -1,8 +1,4 @@
-"""
-Payroll Claims Batch File Importer & Schema Normalizer
-Supports parsing of CSV, JSON, and form data with robust multilingual header mapping
-(Japanese HR headers: 社員番号, 氏名, 雇用形態, 基本給, 通勤費, テレワーク日数, 住宅手当, 任意控除, 控除事由).
-"""
+"""Imports and normalizes payroll claims CSVs across Japanese and English schemas."""
 
 import csv
 import io
@@ -14,16 +10,16 @@ logger = logging.getLogger("BatchImporter")
 
 # Column alias dictionary for resilient ingestion
 COLUMN_ALIASES = {
-    "case_id": ["case_id", "case", "id", "伝票番号", "申請番号"],
-    "employee_id": ["employee_id", "emp_id", "employee", "id", "社員番号", "従業員番号"],
+    "case_id": ["case_id", "case", "伝票番号", "申請番号", "case_no", "ticket_id"],
+    "employee_id": ["employee_id", "emp_id", "employee", "社員番号", "従業員番号", "staff_id"],
     "employee_name": ["employee_name", "name", "emp_name", "氏名", "名前", "従業員名"],
-    "contract_type": ["contract_type", "contract", "employment_type", "type", "雇用形態", "契約形態"],
-    "base_salary": ["base_salary", "salary", "base", "wage", "基本給", "給与"],
-    "claimed_commute": ["claimed_commute", "commute", "commute_allowance", "transit", "通勤費", "定期代"],
-    "telework_days": ["telework_days", "telework", "wfh_days", "remote_days", "テレワーク日数", "在宅日数"],
+    "contract_type": ["contract_type", "contract", "employment_type", "雇用形態", "契約形態"],
+    "base_salary": ["base_salary", "salary", "base_wage", "基本給", "給与"],
+    "claimed_commute": ["claimed_commute", "commute", "commute_allowance", "transit", "通勤費", "定期代", "通勤手当"],
+    "telework_days": ["telework_days", "telework", "wfh_days", "remote_days", "テレワーク日数", "在宅日数", "在宅勤務手当"],
     "claimed_housing": ["claimed_housing", "housing", "rent_subsidy", "住宅手当", "家賃補助"],
     "custom_deduction": ["custom_deduction", "deduction", "other_deduction", "任意控除", "その他控除"],
-    "deduction_reason": ["deduction_reason", "reason", "deduction_memo", "memo", "控除事由", "事由", "備考"]
+    "deduction_reason": ["deduction_reason", "reason", "deduction_memo", "控除事由", "事由", "備考", "memo"]
 }
 
 
@@ -53,14 +49,37 @@ def parse_claims_csv(content: str) -> Tuple[List[Dict[str, Any]], List[str]]:
     if not header:
         return [], ["File is completely empty."]
 
-    # Map header positions
+    # Map header positions with two-pass resolution (Exact matches first, then token/fallback)
     col_map: Dict[str, int] = {}
     normalized_header = [h.strip().lower() for h in header]
+    claimed_indices = set()
 
+    # Pass 1: Exact matches
     for std_key, aliases in COLUMN_ALIASES.items():
         for idx, col_name in enumerate(normalized_header):
-            if col_name in aliases or any(a in col_name for a in aliases):
+            if idx in claimed_indices:
+                continue
+            if col_name in aliases:
                 col_map[std_key] = idx
+                claimed_indices.add(idx)
+                break
+
+    # Pass 2: Token / Word-boundary matching for remaining unmapped keys
+    for std_key, aliases in COLUMN_ALIASES.items():
+        if std_key in col_map:
+            continue
+        for idx, col_name in enumerate(normalized_header):
+            if idx in claimed_indices:
+                continue
+            tokens = [t for t in col_name.replace("-", "_").replace(" ", "_").split("_") if t]
+            if any(a in tokens for a in aliases):
+                col_map[std_key] = idx
+                claimed_indices.add(idx)
+                break
+            # Match Japanese substring or long specific composite alias (min length 3)
+            if any(a in col_name for a in aliases if len(a) >= 3 and a not in ["case", "type", "name", "base", "memo"]):
+                col_map[std_key] = idx
+                claimed_indices.add(idx)
                 break
 
     row_num = 1

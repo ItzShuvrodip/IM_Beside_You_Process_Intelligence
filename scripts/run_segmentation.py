@@ -17,7 +17,7 @@ def main():
     b_dir = DATASET_B_DIR
     deliverables_dir = DELIVERABLES_DIR
     deliverables_dir.mkdir(parents=True, exist_ok=True)
-    out_file = SEGMENTS_FILE
+    out_file = SEGMENTS_FILE  # deliverables/segments.jsonl
 
     model_path = MULTIMODAL_MODEL_PATH
     segmenter = HybridSegmenter(
@@ -32,7 +32,7 @@ def main():
 
     print(f"Recovered {len(all_segments)} work unit segments across {len(list(b_dir.iterdir()))} production sessions.")
 
-    # Write deliverables/segments.jsonl
+    # Write deliverables/segments.jsonl only
     with open(out_file, "w", encoding="utf-8") as f:
         for seg in all_segments:
             line = json.dumps(seg.to_dict(), ensure_ascii=False)
@@ -40,11 +40,12 @@ def main():
 
     print(f"Successfully written to {out_file}")
 
-    # Validation
-    print("Performing strict schema and format verification...")
+    # Strict Validation
+    print("\nPerforming strict schema and format verification on deliverables/segments.jsonl...")
     total_valid = 0
     labels = {}
     confidences = []
+    
     with open(out_file, "r", encoding="utf-8") as f:
         for line_num, line in enumerate(f, 1):
             obj = json.loads(line)
@@ -66,7 +67,8 @@ def main():
             total_valid += 1
 
     avg_conf = sum(confidences) / max(1, len(confidences))
-    print(f"Verification PASSED! All {total_valid} lines are valid. Mean Segment Confidence: {avg_conf:.2f}")
+    print(f"Verification PASSED! All {total_valid} lines in {out_file.name} are strictly valid.")
+    print(f"Mean Segment Confidence: {avg_conf:.2f}")
     print("\nDataset B Process Label Distribution:")
     for lbl, cnt in sorted(labels.items(), key=lambda x: x[1], reverse=True):
         print(f"  {lbl:<35}: {cnt:4d} segments ({cnt/total_valid*100:.1f}%)")

@@ -47,21 +47,21 @@ def is_noise_event(event: RawEvent) -> bool:
     return False
 
 
-# Documented Japanese Dataset A ground-truth family name -> Canonical Process Label Mapping
+# Japanese Dataset A ground-truth family name mapping
 JAPANESE_GT_TO_CANONICAL: Dict[str, str] = {
-    # HR processes
+    # HR
     "住民税通知確認": "resident_tax_confirmation",
     "給与備考・控除整備": "payroll_deduction_adjustment",
     "育児・産休申請確認": "leave_application_processing",
     "社保・年金補正対応": "social_insurance_correction",
     "入社照合・手当確認": "onboarding_verification",
-    # Finance processes
+    # Finance
     "請求書承認": "invoice_approval",
     "経費精算承認": "expense_settlement_approval",
     "銀行勘定照合": "bank_reconciliation",
     "予算差異分析": "budget_variance_analysis",
     "支払処理": "payment_processing",
-    # Operations processes
+    # Operations
     "受注処理": "sales_order_processing",
     "在庫調整": "inventory_order_management",
     "仕入先連絡": "supplier_communication",
@@ -69,7 +69,7 @@ JAPANESE_GT_TO_CANONICAL: Dict[str, str] = {
     "返品処理": "returns_processing",
 }
 
-# Ground truth single-letter execution code -> Canonical Process Label Mapping
+# Ground truth single-letter code mapping
 GT_CODE_TO_CANONICAL: Dict[str, str] = {
     "A": "resident_tax_confirmation",
     "B": "payroll_deduction_adjustment",
@@ -90,10 +90,7 @@ GT_CODE_TO_CANONICAL: Dict[str, str] = {
 
 
 def canonicalize_label(name_or_code: str) -> str:
-    """
-    Normalizes any Japanese family name, single-letter code, or English process label
-    into its canonical standardized identifier.
-    """
+    """Normalizes Japanese family names, letter codes, or aliases to canonical labels."""
     if not name_or_code:
         return "unknown_or_unclassified"
     
@@ -113,14 +110,7 @@ def canonicalize_label(name_or_code: str) -> str:
 
 
 class ClassificationResult:
-    """
-    Classification result supporting:
-    - Direct equality with str: `result == 'unknown_or_unclassified'`
-    - String conversion: `str(result)`
-    - Attribute access: `result.label`, `result.confidence`, etc.
-    - Tuple unpacking: `label, conf, method, ev = result`
-    - Indexing: `result[0]`, `result[1]`, etc.
-    """
+    """Container for segment classification output and evidence."""
     label: str
     confidence: float
     detection_method: str
@@ -170,15 +160,7 @@ class ClassificationResult:
 
 
 class ProcessClassifier:
-    """
-    Deterministic Process Classifier with Signal Confidence Scoring.
-    Enforces strict precedence:
-    1. Action element buttons (exact DOM buttons) -> Confidence: 0.95
-    2. Active browser URL route -> Confidence: 0.85
-    3. Process-specific desktop documents (Word / Excel guidelines) -> Confidence: 0.75
-    4. Main ERP window titles -> Confidence: 0.60
-    Fallback -> unknown_or_unclassified (Confidence: 0.20)
-    """
+    """Rule-based event and segment classifier with confidence calibration."""
 
     LABEL_RULES: List[ProcessRule] = [
         # Payroll Items & Deductions
@@ -360,21 +342,42 @@ class ProcessClassifier:
             return ClassificationResult("unknown_or_unclassified", 0.20, "unclassified_gap", ["no_matching_rules"])
 
         # Pick label with highest aggregated score
-        best_label = max(label_scores.items(), key=lambda x: x[1])[0]
+        sorted_labels = sorted(label_scores.items(), key=lambda x: x[1], reverse=True)
+        best_label, best_score = sorted_labels[0]
+
+        has_button_anchor = any(e.startswith("button:") for e in evidence)
+        has_url_anchor = any(e.startswith("url:") for e in evidence)
+
+        # Multi-signal conflict detection: if distinct labels have close scores without DOM button
+        if len(sorted_labels) > 1:
+            second_label, second_score = sorted_labels[1]
+            if second_score >= (best_score * 0.75) and not has_button_anchor and label_counts[second_label] >= 2:
+                conflict_ev = [f"conflict:{best_label}_vs_{second_label}"] + evidence[:4]
+                return ClassificationResult(
+                    "unknown_or_unclassified",
+                    0.30,
+                    "conflicting_domain_signals",
+                    conflict_ev
+                )
+
         count = label_counts[best_label]
         avg_conf = label_scores[best_label] / count
 
-        # Determine primary detection method
+        # Determine primary detection method and rule-strength calibration
         method = "window_context"
-        if any(e.startswith("button:") for e in evidence):
+        if has_button_anchor:
             method = "dom_action_anchor"
             avg_conf = max(avg_conf, 0.95)
-        elif any(e.startswith("url:") for e in evidence):
+        elif has_url_anchor:
             method = "url_route_anchor"
             avg_conf = max(avg_conf, 0.85)
         elif any(e.startswith("doc:") for e in evidence):
             method = "document_context"
             avg_conf = max(avg_conf, 0.75)
+        else:
+            method = "window_context"
+            if len(sorted_labels) > 1:
+                avg_conf = min(avg_conf, 0.60)
 
         return ClassificationResult(best_label, round(avg_conf, 2), method, evidence)
 

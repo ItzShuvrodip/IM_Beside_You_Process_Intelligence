@@ -45,6 +45,7 @@ def main():
     session_label_accs = []
     session_strict_f1s = []
     total_label_matches = 0
+    all_matched_pairs = []
 
     for i, s in enumerate(sessions):
         loader = SessionDataLoader(s)
@@ -59,6 +60,7 @@ def main():
         total_pred += metrics["pred_count"]
         total_matches += metrics["matches"]
         total_label_matches += metrics["label_matches"]
+        all_matched_pairs.extend(metrics.get("matched_label_pairs", []))
         session_f1s.append(metrics["f1"])
         session_precisions.append(metrics["precision"])
         session_recalls.append(metrics["recall"])
@@ -100,7 +102,29 @@ def main():
     print("---------------------------------------------------------------")
     print(f"Process Label Accuracy:        {macro_label_acc * 100:.2f}% (Macro) | {micro_label_acc * 100:.2f}% (Micro)")
     print(f"Strict End-to-End F1:          {macro_strict_f1 * 100:.2f}% (Macro) | {micro_strict_f1 * 100:.2f}% (Micro)")
-    print("===============================================================\n")
+    print("===============================================================")
+
+    # Per-Process Label Accuracy & Confusion Breakdown
+    gt_counts = {}
+    pred_counts = {}
+    correct_counts = {}
+    for p_lbl, g_lbl in all_matched_pairs:
+        gt_counts[g_lbl] = gt_counts.get(g_lbl, 0) + 1
+        pred_counts[p_lbl] = pred_counts.get(p_lbl, 0) + 1
+        if p_lbl == g_lbl:
+            correct_counts[p_lbl] = correct_counts.get(p_lbl, 0) + 1
+
+    print("\n--- PER-PROCESS LABEL ACCURACY BREAKDOWN (ON MATCHED SEGMENTS) ---")
+    print(f"{'Process Label':<35} {'GT Matches':<12} {'Correct':<10} {'Precision':<12} {'Recall':<10}")
+    print("-" * 80)
+    for lbl in sorted(gt_counts.keys()):
+        gt_c = gt_counts.get(lbl, 0)
+        corr = correct_counts.get(lbl, 0)
+        p_c = pred_counts.get(lbl, 0)
+        prec = (corr / p_c * 100) if p_c > 0 else 0.0
+        rec = (corr / gt_c * 100) if gt_c > 0 else 0.0
+        print(f"{lbl:<35} {gt_c:<12} {corr:<10} {prec:>6.1f}%      {rec:>6.1f}%")
+    print("=" * 80 + "\n")
 
 
 if __name__ == "__main__":

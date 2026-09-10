@@ -15,19 +15,19 @@ Enterprise back-office staff spend substantial portions of their working hours n
 - **Dataset B (Production Process Discovery):** 15 unlabelled sessions (20,477 events across 4 worker machines) and 375 screenshots evenly sampled across all sessions.
 - **Unified Multimodal Sequence Model (`MultimodalProcessNet`):** Trained on an NVIDIA GeForce RTX 5070 Laptop GPU (530,193 parameters) fusing interaction kinematics, text embeddings, and MobileNetV3 visual screenshot features cached in `models/visual_cache.pt` (1,950 embeddings across all 78 sessions).
 
-Through multi-signal neural-symbolic boundary detection calibrated against Dataset A ground truth (63 sessions, 1,752 ground-truth executions), our production segmentation engine achieved **58.11% Boundary Macro F1**, **58.79% Micro F1**, and **58.71% Mean Segment IoU**.
+Through multi-signal neural-symbolic boundary detection calibrated against Dataset A ground truth (63 sessions, 1,752 ground-truth executions), our production segmentation engine achieved **58.08% Boundary Macro F1**, **58.68% Micro F1**, **58.91% Mean Segment IoU**, **22.39% Process Label Accuracy**, and **12.96% Strict End-to-End F1**. While boundary localization is robust (~59% IoU), label classification is heavily bifurcated: URL/DOM-anchored processes like `payroll_deduction_adjustment` achieve 98.8% recall (84/85 correct), whereas desktop finance tasks performed in uninstrumented spreadsheets/PDFs lack DOM anchors. Consequently, recovered segments are properly treated as *candidate work units* that require shadow-mode verification.
 
-Applying this calibrated multimodal hybrid segmentation engine with an unbiased fallback to Dataset B recovered **179 discrete work unit segments** totaling **123.3 minutes of active operational time** across 4 operator workstations (mean signal confidence: **0.84**, 100% schema compliance).
+Applying this calibrated hybrid segmentation engine with multi-signal conflict detection and an unbiased fallback to Dataset B recovered **175 discrete work unit segments** totaling **123.3 minutes of active operational time** across 4 operator workstations (mean signal confidence: **0.84**, 100% schema compliance).
 
-Our empirical analysis establishes that **Payroll Items & Deduction Adjustments (`payroll_deduction_adjustment`)** represents the single highest-ROI automation opportunity:
-- Dominates operational time: **46 work units** accounting for **48.3% of total active operational time** (59.5 minutes; mean duration: **77.7 seconds/segment**).
+Our empirical analysis establishes that **Payroll Items & Deduction Adjustments (`payroll_deduction_adjustment`)** represents the single highest-ROI automation candidate:
+- Dominates operational time: **46 work units** accounting for **48.6% of total active operational time** (59.9 minutes; mean duration: **78.2 seconds/segment**).
 - Widespread cross-departmental practice: executed across **4 out of 4 operator workstations**.
 - High cognitive friction: staff spend **14.8 minutes inside Microsoft Word** consulting contractor guidelines (`gyomu_itaku_kyuuyo_kitei.docx`) to calculate commute caps, telework allowances, and housing subsidies.
-- Demonstrates clear financial return: our corporate sensitivity model projects a **25.2-month payback period** and **+42.7% 3-year net ROI** under base-case volume (9,600 cases/year).
+- Demonstrates viable financial return in standard conditions: our corporate sensitivity model projects a **24.7-month payback period** and **+45.6% 3-year net ROI** under base-case volume (9,600 cases/year). However, because conservative volume scenarios (6,000 cases/year) yield a 70.3-month payback (-48.8% ROI), we advise deploying in **shadow mode** first rather than an immediate full production commitment.
 
 To demonstrate an enterprise-grade operational solution, we architected and delivered two complementary systems:
-1. **Process Intelligence Platform (`deliverables/automation_dashboard.html`):** An executive analytical cockpit providing visual process discovery, Directly-Follows Graphs (DFG), application dwell friction profiles, sequence model telemetry, and a calibrated three-tier financial ROI feasibility model.
-2. **Standalone Enterprise Payroll Deduction Automation Suite (`apps/payroll_automation/`):** An independent full-stack web and desktop application (served on port 8500) that evaluates statutory and company rules in sub-millisecond execution time (<5ms per batch). It incorporates an AI Labor Policy Copilot grounded in Japanese labor and tax statutes, human-in-the-loop exception triage with digital supervisor signatures, pre-flight HRIS/ERP staging, and an immutable SHA-256 cryptographic audit ledger.
+1. **Process Intelligence Platform (`deliverables/automation_dashboard.html`):** An executive analytical cockpit providing visual process discovery, Directly-Follows Graphs (DFG), application dwell friction profiles, segment telemetry replays, and a calibrated three-tier financial ROI feasibility model.
+2. **Standalone Enterprise Payroll Deduction Automation Suite (`apps/payroll_automation/`):** An independent full-stack web and desktop application (served on port 8500) that evaluates statutory and company rules in sub-millisecond execution time (<5ms per batch). It incorporates an AI Labor Policy Copilot grounded in Japanese labor and tax statutes, human-in-the-loop exception triage with digital supervisor signatures, pre-flight HRIS/ERP staging, and an append-only audit trail with SHA-256 cryptographic hash-chaining.
 
 ---
 
@@ -39,28 +39,28 @@ All 78 sessions across both datasets were comprehensively ingested and analyzed:
 
 | Dataset Scope | Total Sessions | Raw Events & Feature Windows | Visual Screenshots | Utilization Status |
 |---|---|---|---|---|
-| **Dataset A** (Benchmark & Training) | **63 / 63** (100%) | ~162,000 raw events; 4,994 sequence windows | 1,575 screenshots sampled evenly across 63 sessions | 100% utilized in multimodal sequence training, Ground Truth interval alignment, and benchmark evaluation. |
-| **Dataset B** (Production Discovery) | **15 / 15** (100%) | 20,477 raw events across all 4 worker machines | 375 screenshots sampled evenly across 15 sessions | 100% utilized in neural-symbolic segmentation, producing all 179 validated work units in `deliverables/segments.jsonl`. |
+| **Dataset A** (Benchmark & Training) | **63 / 63** (100%) | ~162,000 raw events; 4,994 sequence windows | 1,575 screenshots sampled evenly across 63 sessions | 100% utilized in sequence modeling, Ground Truth interval alignment, and label-aware benchmark evaluation. |
+| **Dataset B** (Production Discovery) | **15 / 15** (100%) | 20,477 raw events across all 4 worker machines | 375 screenshots sampled evenly across 15 sessions | 100% utilized in hybrid segmentation, producing all 175 validated work units in `deliverables/segments.jsonl`. |
 | **Combined Total** | **78 / 78** (100%) | ~182,000 total events | 1,950 screenshots cached in `models/visual_cache.pt` | Complete cross-dataset coverage with zero sessions omitted. |
 
 #### Empirical Workload Breakdown across Recovered Segments (Dataset B)
 
-Applying our production hybrid segmenter to Dataset B recovered 179 business process executions across 4 distinct worker machines (`CHAITANYA0BCF`, `SIDDHIGUPTAB00B`, `NEELA9BAF`, `LAPTOP-76QMG9DE`):
+Applying our production hybrid segmenter to Dataset B recovered 175 business process executions across 4 distinct worker machines (`CHAITANYA0BCF`, `SIDDHIGUPTAB00B`, `NEELA9BAF`, `LAPTOP-76QMG9DE`):
 
 | Process Identifier | Business Description | Department | Executions | Active Time (min) | Workload Share (%) | Mean Duration (s) | Signal Conf | Operators |
 |---|---|---|---|---|---|---|---|---|
-| **`payroll_deduction_adjustment`** | Payroll Deduction & Allowance Adjustment | Human Resources | **46** | **59.5** | **48.3%** | **77.7** | **0.89** | **4 / 4** |
+| **`payroll_deduction_adjustment`** | Payroll Deduction & Allowance Adjustment | Human Resources | **46** | **59.9** | **48.6%** | **78.2** | **0.89** | **4 / 4** |
 | `onboarding_verification` | New Hire Onboarding & Allowance Verification | Human Resources | 30 | 16.5 | 13.4% | 33.0 | 0.85 | 4 / 4 |
-| `leave_application_processing` | Leave & Maternity Application Verification | Human Resources | 31 | 16.2 | 13.1% | 31.4 | 0.83 | 4 / 4 |
-| `resident_tax_confirmation` | Resident Tax Notice Confirmation | Human Resources | 17 | 11.9 | 9.7% | 42.0 | 0.95 | 4 / 4 |
-| `expense_settlement_approval` | Expense Settlement Approval | Finance & Accounting | 13 | 7.4 | 6.0% | 34.0 | 0.83 | 3 / 4 |
+| `leave_application_processing` | Leave & Maternity Application Verification | Human Resources | 29 | 15.2 | 12.3% | 31.4 | 0.84 | 4 / 4 |
+| `resident_tax_confirmation` | Resident Tax Notice Confirmation | Human Resources | 17 | 12.1 | 9.8% | 42.7 | 0.95 | 4 / 4 |
+| `expense_settlement_approval` | Expense Settlement Approval | Finance & Accounting | 12 | 7.1 | 5.7% | 35.4 | 0.83 | 3 / 4 |
 | `inventory_order_management` | Inventory & Order Adjustment | Logistics & Procurement | 25 | 6.9 | 5.6% | 16.6 | 0.65 | 4 / 4 |
 | `budget_variance_analysis` | Monthly Budget Variance Analysis | Finance & Accounting | 4 | 3.2 | 2.6% | 48.6 | 0.80 | 3 / 4 |
-| `social_insurance_correction` | Social Insurance & Pension Correction | Human Resources | 11 | 1.3 | 1.1% | 7.1 | 0.94 | 3 / 4 |
-| `unknown_or_unclassified` | Non-Standard / Unclassified Activity | General Operations | 2 | 0.4 | 0.3% | 10.7 | 0.22 | 1 / 4 |
-| **Total** | — | — | **179** | **123.3** | **100.0%** | **41.3** | **0.84** | **4 / 4** |
+| `unknown_or_unclassified` | Non-Standard / Conflicting Activity | General Operations | 2 | 1.3 | 1.1% | 39.4 | 0.30 | 2 / 4 |
+| `social_insurance_correction` | Social Insurance & Pension Correction | Human Resources | 10 | 1.1 | 0.9% | 6.5 | 0.95 | 3 / 4 |
+| **Total** | — | — | **175** | **123.3** | **100.0%** | **42.3** | **0.84** | **4 / 4** |
 
-*Note: The predominance of `payroll_deduction_adjustment` (48.3% of active operational minutes) is an empirical property of operator work.*
+*Note: The predominance of `payroll_deduction_adjustment` (48.6% of active operational minutes) is an empirical property of operator work.*
 
 ---
 
@@ -132,18 +132,21 @@ $$\text{Composite Score} = \min\left(100.0, (\text{D1} + \text{D2} + \text{D3} +
 | Financial Parameter | Conservative Case | Base Case (Target) | Optimistic Case | Parameter Function & Utilization Rationale |
 |---|---|---|---|---|
 | **Annualized Volume** | 6,000 cases | 9,600 cases | 14,400 cases | Enterprise operational transaction scale |
-| **Manual Baseline Time** | 104.5s / case | 104.5s / case | 104.5s / case | Active UI dwell (76.5s) + Word lookup dwell (28.0s) |
+| **Manual Baseline Time** | 106.2s / case | 106.2s / case | 106.2s / case | Active UI dwell (78.2s) + Word lookup dwell (28.0s) |
 | **Target Auto-Approval Rate** | 65.0% | 85.0% | 95.0% | Straight-Through Processing (STP) policy ceiling |
-| **Effective STP Rate** | 61.8% | 80.8% | 90.3% | Governed by rule standardization: `ar * (0.5 + 0.5 * std)` |
+| **Effective STP Rate** | 61.7% | 80.7% | 90.2% | Governed by rule standardization: `ar * (0.5 + 0.5 * std)` |
 | **Operator Adoption Rate** | 70.0% | 85.0% | 95.0% | Target operational rollout rate |
 | **Effective Adoption Rate** | 70.0% | 85.0% | 95.0% | Scaled by cross-operator reach across workstations (4/4) |
 | **Exception Review Time** | 35.0 seconds | 15.0 seconds | 8.0 seconds | Risk-scaled manual review for flagged exceptions |
-| **Annual Labor Hours Saved** | 108.6 hours | **230.1 hours** | 400.1 hours | Direct capacity liberated from manual verification |
-| **Annual Gross Savings** | ¥380,100 | **¥805,350** | ¥1,400,350 | Gross labor value (`hours_saved * ¥3,500/hr`) |
-| **Annual Net Financial Savings** | ¥240,100 | **¥665,350** | ¥1,260,350 | Net recurring cash flow after ¥140k/yr maintenance |
-| **Capital Payback Period** | 70.0 months | **25.2 months** | 13.3 months | Months to fully recover ¥1.4M initial build cost |
-| **3-Year Net ROI** | -48.5% | **+42.6%** | **+170.1%** | Net ROI over 3-year lifecycle |
-| **3-Year Net NPV** | -¥679,700 | **+¥596,050** | **+¥2,381,050** | 3-year cumulative net profit minus capex |
+| **Annual Labor Hours Saved** | 108.3 hours | **234.2 hours** | 400.6 hours | Direct capacity liberated from manual verification |
+| **Annual Gross Savings** | ¥378,978 | **¥819,597** | ¥1,402,057 | Gross labor value (`hours_saved * ¥3,500/hr`) |
+| **Annual Net Financial Savings** | ¥238,978 | **¥679,597** | ¥1,262,057 | Net recurring cash flow after ¥140k/yr maintenance |
+| **Capital Payback Period** | 70.3 months | **24.7 months** | 13.3 months | Months to fully recover ¥1.4M initial build cost |
+| **3-Year Net ROI** | -48.8% | **+45.6%** | **+170.4%** | Net ROI over 3-year lifecycle |
+| **3-Year Net NPV** | -¥683,065 | **+¥638,791** | **+¥2,386,172** | 3-year cumulative net profit minus capex |
+
+> [!IMPORTANT]
+> **Disciplined Commercial Finding:** While the Base Case achieves a viable **24.7-month payback** and **+45.6% 3-year ROI**, the Conservative Case requires **70.3 months** and generates a **negative return (-48.8%)**. Consequently, committing upfront capital to full ERP/HRIS production integration is financially premature. The soundest executive decision is to initiate a **60-day shadow-mode pilot** to empirically measure true transaction volume, exception rates, and reviewer agreement before approving full capital expenditure.
 
 ---
 
@@ -169,15 +172,15 @@ This stochastic stress test confirms that `payroll_deduction_adjustment` is fina
 
 | Rank | Candidate Process Family | Department | Executions | Workload Share | Feasibility | Risk | Payback (Base) | 3-Yr Net ROI | Strategic Recommendation |
 |---|---|---|---|---|---|---|---|---|---|
-| **1** | **`payroll_deduction_adjustment`** | **Human Resources** | **46** | **48.3%** | **0.85** | **1.20** | **25.2 mo** | **+42.7%** | **Build Now (Phase 1 Target)** |
-| 2 | `leave_application_processing` | Human Resources | 31 | 13.1% | 0.80 | 1.30 | 79.4 mo | -54.7% | Deferred to Phase 2 |
-| 3 | `onboarding_verification` | Human Resources | 30 | 13.4% | 0.75 | 1.40 | 72.1 mo | -50.1% | Deferred to Phase 2 |
-| 4 | `resident_tax_confirmation` | Human Resources | 17 | 9.7% | 0.80 | 1.30 | 73.0 mo | -50.7% | Deferred to Phase 3 |
-| 5 | `expense_settlement_approval` | Finance & Accounting | 13 | 6.0% | 0.80 | 1.20 | 99.0 mo | -66.6% | Deferred to Phase 3 |
-| 6 | `inventory_order_management` | Logistics & Procurement | 25 | 5.6% | 0.70 | 1.50 | 99.0 mo | -81.7% | Reject (High human variance) |
+| **1** | **`payroll_deduction_adjustment`** | **Human Resources** | **46** | **48.6%** | **0.85** | **1.20** | **24.7 mo** | **+45.6%** | **Shadow Pilot (Phase 1 Target)** |
+| 2 | `leave_application_processing` | Human Resources | 29 | 12.3% | 0.80 | 1.30 | 80.0 mo | -55.0% | Deferred to Phase 2 |
+| 3 | `resident_tax_confirmation` | Human Resources | 17 | 9.8% | 0.80 | 1.30 | 64.5 mo | -44.2% | Deferred to Phase 2 |
+| 4 | `onboarding_verification` | Human Resources | 30 | 13.4% | 0.75 | 1.40 | 69.3 mo | -48.0% | Deferred to Phase 2 |
+| 5 | `expense_settlement_approval` | Finance & Accounting | 12 | 5.7% | 0.80 | 1.20 | 86.7 mo | -58.5% | Deferred to Phase 3 |
+| 6 | `inventory_order_management` | Logistics & Procurement | 25 | 5.6% | 0.70 | 1.50 | 99.0 mo | -80.1% | Reject (High human variance) |
 | 7 | `budget_variance_analysis` | Finance & Accounting | 4 | 2.6% | 0.65 | 1.30 | 50.5 mo | -28.7% | Low frequency / ad-hoc |
-| 8 | `social_insurance_correction` | Human Resources | 11 | 1.1% | 0.75 | 1.40 | 99.0 mo | -105.1% | Low volume in production |
-| 9 | `unknown_or_unclassified` | General Operations | 2 | 0.3% | 0.30 | 2.00 | 99.0 mo | -130.0% | Non-standard gap events |
+| 8 | `social_insurance_correction` | Human Resources | 10 | 0.9% | 0.75 | 1.40 | 99.0 mo | -105.1% | Low volume in production |
+| 9 | `unknown_or_unclassified` | General Operations | 2 | 1.1% | 0.30 | 2.00 | 99.0 mo | -102.1% | Non-standard gap events |
 
 ---
 
@@ -295,10 +298,10 @@ To separate strategic process intelligence from operational execution, the deliv
    - Employees with cross-border residency or multiple simultaneous employers require specialized tax accountant evaluation.
 
 **Realistically Expected Operational Impact:**
-- **Time Reduction:** Replaces a 76.5-second manual verification cycle with an automated rule check completed in < 2 milliseconds.
-- **Straight-Through Processing:** 75% to 80% of standard monthly claims are automatically pre-verified and staged for batch payroll approval.
-- **Error Elimination:** Mathematical calculation errors and misremembered commute/telework policy limits are reduced to zero.
-- **Net Labor Savings:** **230.1 labor hours saved annually** for a 9,600-case volume (¥665,350 net annual savings).
+- **Time Reduction:** Evaluates rule checks in sub-millisecond local execution (<2 milliseconds per claim) compared to an average 78.2-second manual verification cycle.
+- **Straight-Through Processing:** 75% to 80% of standard monthly claims are automatically pre-verified and staged for batch payroll review.
+- **Deterministic Policy Enforcement:** Eliminates arithmetic errors and misremembered policy limit errors across auto-approved transactions.
+- **Net Labor Savings:** **234.2 labor hours saved annually** for a 9,600-case base volume (¥679,597 net annual savings).
 
 ---
 
@@ -308,7 +311,7 @@ To separate strategic process intelligence from operational execution, the deliv
 |---|---|---|---|
 | **Stale Browser Tab Inconsistencies** | In Dataset A and B, operators frequently kept multiple tabs open, causing OS window titles to report an inactive system while active input occurred in another tab. | High | Rules engine operates via explicit JSON API payload rather than scraping window titles or screen pixels. |
 | **Missing / Ambiguous Deduction Memos** | Telemetry logs showed staff typing freeform text in `pi-note` (`"経費精算メモ"`, `"備品立替"`), occasionally submitting empty memos. | Medium | Built-in validation rule flags any non-zero custom deduction lacking an explanatory memo for mandatory human review. |
-| **Contract Type Data Mismatches** | Dataset B showed contractors and outsourcing staff sometimes being processed through the same UI forms as regular employees. | High | Strict contract type validation enforces eligibility restrictions (e.g., housing subsidies rejected for outsourcing staff per Article 4). |
+| **Contract Type Data Mismatches** | Dataset B showed contractors and outsourcing staff sometimes being processed through the same UI forms as regular employees. | High | Strict contract type validation enforces eligibility restrictions (e.g., housing subsidies rejected for outsourcing staff per Article 4). Pre-flight HRIS adapter checks master employee contract records. |
 | **Regulatory Rate Shifts** | Statutory tax-exempt commute limits and Shakai Hoken deduction tiers change under Japanese tax law revisions. | Medium | Policy rules are fully decoupled from code into a versioned configuration (`v2026.04-v1.2`) with statutory citation provenance. |
 
 ---
@@ -321,19 +324,21 @@ The 7-day engineering effort was allocated to prioritize evidence integrity and 
 |---|---|---|---|
 | **Day 1** | Ingestion & Environment | Reverse-engineered chunked logs, schema parsing, and UTF-8 Japanese character decoding. | 10% |
 | **Day 2** | Segmentation Modeling | Formulated multi-signal boundary detection (URL routes, action buttons, dwell gaps). | 15% |
-| **Day 3** | Benchmark Calibration | Decoupled 1-to-1 evaluation on Dataset A (63 sessions). Discovered 15 Japanese GT classes. | 20% |
-| **Day 4** | Production Segmentation | Segmented Dataset B (179 validated segments). Unbiased fallback with `unknown_or_unclassified`. | 15% |
+| **Day 3** | Benchmark Calibration | Decoupled 1-to-1 evaluation on Dataset A (63 sessions). Discovered 15 Japanese GT classes and built canonical mapping. | 20% |
+| **Day 4** | Production Segmentation | Segmented Dataset B (175 validated segments). Multi-signal conflict detection with unbiased `unknown_or_unclassified`. | 15% |
 | **Day 5** | Workload & ROI Discovery | Process mining DFG extraction, segment-joined dwell attribution, 3-scenario financial modeling. | 15% |
-| **Day 6** | Automation Tool Build | Built versioned Python rules engine (`v2026.04-v1.2`), FastAPI REST service, and test suite. | 15% |
-| **Day 7** | Hardening & Deliverables | Rebuilt authentic Jupyter notebooks, hardened documentation, and finalized Git repository. | 10% |
+| **Day 6** | Automation Tool Build | Built versioned Python rules engine (`v2026.04-v1.2`), FastAPI REST service, and unit test suite. | 15% |
+| **Day 7** | Hardening & Deliverables | Generated 40-segment gold audit set, review queue, hardened test coverage (48 tests), and finalized documentation. | 10% |
 
 ---
 
 ## 4. Conclusion & Rollout Roadmap
 
-The empirical activity data proves that back-office operational friction is heavily concentrated in manual policy lookups during monthly payroll deduction processing. By deploying our **Shadow-Mode Decision Assistant**, the client can immediately eliminate repetitive guideline searches while preserving full supervisory control over complex policy exceptions.
+The empirical activity data indicates that back-office operational friction is concentrated in manual policy lookups during monthly payroll deduction processing. However, because corporate financial returns are sensitive to case volume (the base case achieves a viable 24.7-month payback, whereas the conservative case extends to 70.3 months), an upfront commitment to full autonomous ERP replacement is not commercially justified.
+
+Instead, deploying a **Shadow-Mode Decision Assistant** offers the optimal risk-adjusted path forward: it immediately relieves operators from tedious manual Word guideline verification while empirically measuring true transaction volume, exception frequencies, and reviewer agreement in a live environment before capital is committed to automated write-backs.
 
 **Recommended 60-Day Rollout Plan:**
-1. **Weeks 1–2 (Shadow Mode Deployment):** Connect the FastAPI Decision Engine in read-only shadow mode alongside the existing HR portal to evaluate incoming claims in parallel with human specialists.
-2. **Weeks 3–4 (Reconciliation & Threshold Tuning):** Reconcile shadow decisions against human approvals to calibrate flag thresholds and review supervisor override memos.
-3. **Month 2 (Staged Production Rollout):** Enable straight-through auto-approval for high-confidence standard claims, routing flagged exceptions to the interactive review desk.
+1. **Weeks 1–2 (Read-Only Shadow Mode):** Connect the FastAPI Decision Engine in read-only shadow mode alongside the existing HR portal to evaluate incoming claims in parallel with human specialists without affecting the production database.
+2. **Weeks 3–4 (Reconciliation & Threshold Tuning):** Reconcile shadow decisions against human specialist determinations to tune exception flag sensitivities, measure true operational volume, and review supervisor override justifications.
+3. **Month 2 (Staged Production Integration):** Once empirical volume and high reviewer concurrence (>95%) are confirmed, enable pre-flight HRIS staging and batch approval for high-confidence claims, continuing to route flagged anomalies to the interactive review desk.

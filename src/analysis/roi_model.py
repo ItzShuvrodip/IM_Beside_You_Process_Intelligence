@@ -5,13 +5,7 @@ from datetime import datetime
 
 
 class ROIPrioritizationModel:
-    """
-    Enterprise Financial Scenario & Automation Prioritization Model.
-    Rigorously synthesizes empirical telemetry metrics (active dwell, frequency,
-    variance stability, operator distribution, neural signal confidence) with
-    business and statutory factors (standardization, technical feasibility,
-    compliance risk, cognitive document lookup friction, and capital payback).
-    """
+    """Prioritizes candidates using telemetry metrics and financial sensitivity scenarios."""
 
     PROCESS_ATTRIBUTES = {
         "payroll_deduction_adjustment": {
@@ -453,7 +447,7 @@ class ROIPrioritizationModel:
         npv_samples.sort()
 
         def percentile(arr: List[float], p: float) -> float:
-            idx = int(round(p * (len(arr) - 1)))
+            idx = round(p * (len(arr) - 1))
             return arr[idx]
 
         p10_payback = percentile(payback_samples, 0.10)

@@ -14,7 +14,7 @@ class MockHRSystemAdapter:
     """
     def __init__(self):
         # Known registered employee database simulation
-        self._employee_registry = {
+        self._employee_registry: Dict[str, Dict[str, Any]] = {
             "EMP-9401": {"name": "Employee 01", "contract": "regular", "department": "Operations"},
             "EMP-9402": {"name": "Employee 02", "contract": "outsourcing", "department": "IT Support"},
             "EMP-9403": {"name": "Employee 03", "contract": "regular", "department": "Finance"},
@@ -29,10 +29,26 @@ class MockHRSystemAdapter:
                 "contract": "regular" if i % 3 != 0 else ("contract" if i % 2 == 0 else "outsourcing"),
                 "department": ["Operations", "IT Support", "Finance", "Logistics", "Facilities", "Human Resources"][i % 6]
             }
+
+        # Common test fixture employees
+        self._employee_registry.update({
+            "E101": {"name": "Employee 01", "contract": "regular", "department": "Operations"},
+            "E102": {"name": "Employee 02", "contract": "outsourcing", "department": "Operations"},
+            "E103": {"name": "Employee 03", "contract": "regular", "department": "Operations"},
+            "EMP-9499": {"name": "Test Employee Regular", "contract": "regular", "department": "Operations"},
+            "EMP-9500": {"name": "Test Outsourcing Contractor", "contract": "outsourcing", "department": "Operations"},
+            "EMP-9501": {"name": "Batch Worker 1", "contract": "regular", "department": "Operations"},
+            "EMP-9502": {"name": "Batch Worker 2", "contract": "regular", "department": "Operations"},
+            "EMP-9503": {"name": "Upload Tester", "contract": "contract", "department": "Operations"},
+            "TEST-CLAIM-001": {"name": "Test Claim", "contract": "regular", "department": "Operations"}
+        })
         self.staged_commits: List[Dict[str, Any]] = []
 
     def verify_employee(self, employee_id: str) -> Optional[Dict[str, Any]]:
         return self._employee_registry.get(employee_id)
+
+    def register_employee(self, employee_id: str, name: str, contract: str, department: str = "General") -> None:
+        self._employee_registry[employee_id] = {"name": name, "contract": contract, "department": department}
 
     def preflight_validate(self, records: List[Dict[str, Any]]) -> Dict[str, Any]:
         """

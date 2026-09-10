@@ -1,11 +1,4 @@
-"""
-AI Policy Copilot & Corporate Regulation Reasoning Engine
-Grounded in Japanese Labor Law and Internal Regulations:
-- gyomu_itaku_kyuuyo_kitei (Compensation & Outsourcing Guidelines)
-- Statutory Commute Tax-Exempt Caps (Income Tax Act Art. 21)
-- Statutory Deductions (Social & Employment Insurance)
-- Custom Deduction Safeguards (20% Base Salary Cap)
-"""
+"""Policy reasoning engine for statutory and internal compensation rules."""
 
 import logging
 from typing import Dict, Any, List, Optional
@@ -100,11 +93,12 @@ class PolicyCopilot:
         if custom_ded > 0:
             threshold = base_salary * 0.20
             if custom_ded > threshold:
+                pct_str = f"{(custom_ded / base_salary) * 100:.1f}%" if base_salary > 0 else "N/A (zero base salary)"
                 findings.append({
                     "category": "Custom Deduction Ceiling",
                     "severity": "FLAG_REVIEW",
                     "rule_ref": "Labor Standards Act Art. 24 & Policy §11 (Cap: 20%)",
-                    "detail": f"Deduction of ¥{custom_ded:,} represents {(custom_ded / base_salary) * 100:.1f}% of base salary (¥{base_salary:,}), exceeding the 20% statutory protective threshold (¥{threshold:,.0f}). Requires signed supervisor authorization."
+                    "detail": f"Deduction of ¥{custom_ded:,} represents {pct_str} of base salary (¥{base_salary:,}), exceeding the 20% statutory protective threshold (¥{threshold:,.0f}). Requires signed supervisor authorization."
                 })
             reason = input_data.get("deduction_reason", "")
             if not reason:

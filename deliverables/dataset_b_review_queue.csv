@@ -1,5 +1,6 @@
 session_id,start,end,label,confidence,detection_method,evidence,reviewer,review_status,reviewed_label,boundary_correct,review_notes
 ses_20260701-164424-CHAITANYA0BCF,2026-07-01T16:44:24Z,2026-07-01T16:44:39Z,inventory_order_management,0.6,window_context,title:受発注在庫管理システム,,pending,,,
+ses_20260701-164424-CHAITANYA0BCF,2026-07-01T16:54:52Z,2026-07-01T16:55:47Z,unknown_or_unclassified,0.3,conflicting_domain_signals,conflict:leave_application_processing_vs_inventory_order_management | title:受発注在庫管理システム | doc:shinkui_keiyaku | doc:keiyaku_kaijo_tetsuzuki,,pending,,,
 ses_20260701-171614-CHAITANYA0BCF,2026-07-01T17:18:52Z,2026-07-01T17:19:01Z,inventory_order_management,0.6,window_context,title:受発注在庫管理システム,,pending,,,
 ses_20260701-173246-SIDDHIGUPTAB00B,2026-07-01T17:32:46Z,2026-07-01T17:32:58Z,inventory_order_management,0.6,window_context,title:受発注在庫管理システム,,pending,,,
 ses_20260701-173246-SIDDHIGUPTAB00B,2026-07-01T17:45:19Z,2026-07-01T17:45:33Z,inventory_order_management,0.6,window_context,title:受発注在庫管理システム,,pending,,,
@@ -14,6 +15,7 @@ ses_20260701-175747-SIDDHIGUPTAB00B,2026-07-01T18:07:11Z,2026-07-01T18:07:18Z,in
 ses_20260701-180923-NEELA9BAF,2026-07-01T18:21:52Z,2026-07-01T18:22:03Z,unknown_or_unclassified,0.24,hybrid_neural_symbolic,no_matching_rules,,pending,,,
 ses_20260701-181413-LAPTOP-76QMG9DE,2026-07-01T18:14:13Z,2026-07-01T18:14:26Z,payroll_deduction_adjustment,0.6,window_context,title:給与,,pending,,,
 ses_20260701-181413-LAPTOP-76QMG9DE,2026-07-01T18:21:34Z,2026-07-01T18:21:46Z,inventory_order_management,0.6,window_context,title:受発注在庫管理システム,,pending,,,
+ses_20260701-182634-NEELA9BAF,2026-07-01T18:28:20Z,2026-07-01T18:28:44Z,unknown_or_unclassified,0.3,conflicting_domain_signals,conflict:leave_application_processing_vs_inventory_order_management | url:/social-insurance | doc:shinkui_keiyaku | doc:keiyaku_kaijo_tetsuzuki,,pending,,,
 ses_20260701-182634-NEELA9BAF,2026-07-01T18:29:13Z,2026-07-01T18:29:27Z,expense_settlement_approval,0.6,window_context,title:受発注在庫管理システム | title:expense_calc,,pending,,,
 ses_20260701-182634-NEELA9BAF,2026-07-01T18:32:36Z,2026-07-01T18:32:42Z,payroll_deduction_adjustment,0.6,window_context,title:給与,,pending,,,
 ses_20260701-182634-NEELA9BAF,2026-07-01T18:36:27Z,2026-07-01T18:36:34Z,expense_settlement_approval,0.6,window_context,title:受発注在庫管理システム | title:精算確認メモ,,pending,,,

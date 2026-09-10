@@ -26,7 +26,9 @@ IMBY/ (Repository Root)
 │   ├── boundary_bilstm_best.pt   # Benchmark compatibility sequence checkpoint
 │   └── visual_cache.pt           # GPU MobileNetV3 visual screenshot feature cache
 ├── deliverables/
-│   ├── segments.jsonl        # Step 1 Output: 179 validated work unit segments for Dataset B
+│   ├── segments.jsonl        # Step 1 Output: 175 validated work unit segments for Dataset B
+│   ├── dataset_b_audit.csv   # Stratified 40-segment Gold Audit Set with screenshot references
+│   ├── dataset_b_review_queue.csv # Triage queue of low-confidence / conflicting segments
 │   ├── audit_trail.jsonl     # Tamper-evident cryptographic transaction ledger
 │   └── automation_dashboard.html # Step 2 Intelligence & Executive Cockpit Dashboard
 ├── notebooks/
@@ -59,14 +61,16 @@ IMBY/ (Repository Root)
 │   │   ├── demo_runner.py    # Sample batch CLI execution utility
 │   │   └── generate_dashboard.py # Intelligence dashboard compilation script
 │   └── audit/                # Compliance and governance
-│       └── audit_logger.py   # Immutable SHA-256 audit trail logger
+│       └── audit_logger.py   # Append-only SHA-256 audit trail logger
 ├── scripts/
 │   ├── train_multimodal_model.py # Trains MultimodalProcessNet on GPU with mixed precision
 │   ├── run_segmentation.py   # Generates and validates deliverables/segments.jsonl
 │   ├── run_analysis.py       # Generates Step 2 workload tables and ROI rankings
 │   ├── run_benchmark.py      # Evaluates benchmark performance on Dataset A (63 sessions)
+│   ├── generate_gold_audit.py # Generates deliverables/dataset_b_audit.csv
+│   ├── export_review_queue.py # Exports low-confidence segments to dataset_b_review_queue.csv
 │   └── run_server.py         # Launches Process Intelligence FastAPI server on port 8000
-├── tests/                    # 40 automated unit, ML, and enterprise integration tests
+├── tests/                    # 48 automated unit, ML, and enterprise integration tests
 ├── REPORT.md                 # Formal Senior Executive Report
 ├── WORK_LOG.md               # Seven-Day Engineering Work Log and Architecture Decisions
 ├── pyproject.toml            # Build configuration and project metadata
@@ -77,11 +81,11 @@ IMBY/ (Repository Root)
 
 ## 2. Quickstart & Operational Guide
 
-### 2.1 Automated Test Suite Verification (44/44 Passing)
+### 2.1 Automated Test Suite Verification (48 Tests: 46 Passing, 2 PyTorch Optional)
 Execute the complete test suite across data loading, neural network inference, hybrid segmentation, process mining, financial ROI modeling, Multi-ERP connectors, Policy Governance Studio, and the standalone automation application:
 
 ```bash
-python -m pytest tests/ -v
+python -m unittest discover tests -v
 ```
 
 Static type checking verification:
@@ -145,7 +149,7 @@ deliverables/automation_dashboard.html
 ```
 
 Analytical capabilities:
-- **Process Digital Twin & Visual Telemetry Replay:** Click any of the 179 recovered work unit segments in the telemetry explorer to inspect second-by-second operations, application dwell distributions (Microsoft Word 53.2% lookup bottleneck, Excel calculations, Chrome portal entry), keystroke counts, and automated remediation rationale.
+- **Process Digital Twin & Visual Telemetry Replay:** Click any of the 175 recovered work unit segments in the telemetry explorer to inspect second-by-second operations, application dwell distributions (Microsoft Word lookup bottleneck, Excel calculations, Chrome portal entry), keystroke counts, and automated remediation rationale.
 - **Monte Carlo Financial Risk & Uncertainty Engine:** 10,000 stochastic iterations modeling operational volume shifts (±30%), wage variances ($30–$45/hr), and adoption fluctuations, yielding empirical confidence intervals (P10: 20.0 mo, P50: 26.2 mo, P90: 35.9 mo) and demonstrating a **90.2% probability of capital recovery within 36 months**.
 
 ---
@@ -164,7 +168,7 @@ python scripts/train_multimodal_model.py
 ```bash
 python scripts/run_segmentation.py
 ```
-*Processes all 15 production sessions in Dataset B, outputs 179 validated work unit segments to `deliverables/segments.jsonl` (mean confidence: 0.84), and validates schema compliance.*
+*Processes all 15 production sessions in Dataset B, outputs 175 validated work unit segments to `deliverables/segments.jsonl` (mean confidence: 0.84), and validates schema compliance.*
 
 ---
 
@@ -180,7 +184,7 @@ python scripts/run_analysis.py
 ```bash
 python scripts/run_benchmark.py
 ```
-*Computes decoupled 1-to-1 metrics across 63 ground-truth sessions: Boundary Macro F1 (58.11%), Segment IoU (58.71%), and Process Label Accuracy (18.52%).*
+*Computes decoupled 1-to-1 label-aware metrics across 63 ground-truth sessions: Boundary Macro F1 (58.08%), Segment IoU (58.91%), Process Label Accuracy (22.39%), and Strict End-to-End F1 (12.96%).*
 
 ---
 
@@ -195,9 +199,9 @@ Located in the `notebooks/` directory:
 ## 3. Summary of Operational Findings
 
 - **Selected Automation Target:** `payroll_deduction_adjustment` (Payroll Items & Deduction Adjustments).
-- **Workload Concentration:** Represents **48.3% of total active operational time** in Dataset B (59.5 minutes across 46 work units; mean signal confidence: **0.89**).
+- **Workload Concentration:** Represents **48.6% of total active operational time** in Dataset B (59.9 minutes across 46 work units; mean signal confidence: **0.89**).
 - **Dwell Attribution Analysis:** Segment-joined telemetry isolates **14.8 minutes** of active Microsoft Word dwell reviewing `gyomu_itaku_kyuuyo_kitei.docx` (contractor compensation guidelines) inside payroll intervals, confirming a substantial manual cognitive lookup bottleneck.
-- **Financial Business Case (Base Target Scenario):** At an enterprise loaded labor rate of ¥3,500/hr, initial development cost of ¥1.4M, and annual maintenance of ¥140K/yr, automating payroll verification yields **25.2 months payback** and **+42.7% net three-year ROI** based on an annual volume of 9,600 cases.
+- **Financial Business Case (Base Target Scenario):** At an enterprise loaded labor rate of ¥3,500/hr, initial development cost of ¥1.4M, and annual maintenance of ¥140K/yr, automating payroll verification yields **24.7 months payback** and **+45.6% net three-year ROI** based on an annual volume of 9,600 cases. Conservative volume scenarios (6,000 cases) yield a 70.3-month payback, strongly favoring a phased **shadow-mode pilot** over upfront autonomous replacement.
 - **System Delivery:** Separated into two distinct operational artifacts:
   1. *Process Intelligence Platform:* Quantitative executive cockpit, DFG process graph, and workload telemetry.
   2. *Enterprise Payroll Automation Suite:* Dedicated web and desktop application executing deterministic compliance validation, AI Copilot assistance, exception triage, and tamper-evident audit logging.

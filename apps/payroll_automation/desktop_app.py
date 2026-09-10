@@ -34,10 +34,10 @@ def is_port_in_use(port: int, host: str = "127.0.0.1") -> bool:
         return s.connect_ex((host, port)) == 0
 
 
-def find_available_port(start_port: int = 8500) -> int:
+def find_available_port(start_port: int = 8500, host: str = "127.0.0.1") -> int:
     port = start_port
     while port < start_port + 50:
-        if not is_port_in_use(port):
+        if not is_port_in_use(port, host):
             return port
         port += 1
     return start_port
@@ -90,11 +90,11 @@ def main():
                 logger.info(f"Existing engine instance detected on port {port}.")
                 server_thread = None
             else:
-                port = find_available_port(8501)
+                port = find_available_port(8501, host)
                 server_thread = ServerThread(host, port)
                 server_thread.start()
         except Exception:
-            port = find_available_port(8501)
+            port = find_available_port(8501, host)
             server_thread = ServerThread(host, port)
             server_thread.start()
     else:

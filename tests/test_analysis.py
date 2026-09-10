@@ -49,5 +49,15 @@ class TestProcessMiningAndROI(unittest.TestCase):
         self.assertGreater(mc["risk_probabilities"]["prob_payback_under_36_months_pct"], 70.0)
 
 
+    def test_mine_dataset_custom_path(self):
+        miner = DirectlyFollowsGraphMiner()
+        # Test that passing a custom dataset_path updates the miner and executes cleanly
+        from src.config import DATASET_B_DIR
+        res = miner.mine_dataset(dataset_path=DATASET_B_DIR, segments=self.sample_segments)
+        self.assertIn("payroll_deduction_adjustment", res)
+        self.assertIn("overall_dfg", res)
+        self.assertEqual(miner.dataset_path, DATASET_B_DIR)
+
+
 if __name__ == "__main__":
     unittest.main()

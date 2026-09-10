@@ -31,11 +31,7 @@ def is_auxiliary_app(app_name: Optional[str]) -> bool:
 
 
 class HybridSegmenter:
-    """
-    Production Hybrid Segmenter with Signal Confidence Scoring & Neural Boundary Fusion.
-    Consolidates DOM button anchors, active browser URL propagation,
-    document context, deep neural sequence probabilities, and inactivity gaps into verified work units.
-    """
+    """Multi-signal work unit segmenter using DOM actions, URL routes, document context, and inactivity gaps."""
     def __init__(
         self,
         dwell_gap_seconds: float = 24.0,
