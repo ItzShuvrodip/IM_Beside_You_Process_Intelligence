@@ -55,17 +55,18 @@ class SessionDataLoader:
         self.session_path = Path(session_path)
         self.session_id = self.session_path.name
 
-    def load_events(self) -> List[RawEvent]:
+    def iter_events(self):
         """
-        Loads all events from all chunks in this session,
-        sorted chronologically by timestamp_ms.
+        Yields events sequentially from chunks without loading all into memory at once.
+        Note: For globally timestamp-sorted sequence across chunks, use load_events().
         """
-        events: List[RawEvent] = []
-        chunks = [
+        if not self.session_path.exists() or not self.session_path.is_dir():
+            return
+
+        chunks = sorted([
             d for d in self.session_path.iterdir()
             if d.is_dir() and d.name.startswith("chunk_")
-        ]
-        chunks.sort(key=lambda x: x.name)
+        ], key=lambda x: x.name)
 
         for chunk_dir in chunks:
             events_file = chunk_dir / "events.jsonl"
@@ -75,8 +76,17 @@ class SessionDataLoader:
                 for line in f:
                     ev = parse_event_line(line)
                     if ev:
-                        events.append(ev)
+                        yield ev
 
+    def load_events(self) -> List[RawEvent]:
+        """
+        Loads all events from all chunks in this session,
+        sorted chronologically by timestamp_ms.
+        """
+        if not self.session_path.exists() or not self.session_path.is_dir():
+            return []
+
+        events: List[RawEvent] = list(self.iter_events())
         events.sort(key=lambda e: (e.timestamp_ms, e.event_id))
         return events
 

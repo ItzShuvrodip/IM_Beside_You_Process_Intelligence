@@ -286,15 +286,26 @@ def supervisor_override(override: SupervisorOverrideModel):
     if not c:
         raise HTTPException(status_code=404, detail=f"Case {override.case_id} not found.")
 
+    sig_material = f"{override.case_id}_{override.supervisor_id}_{override.supervisor_memo}"
+    sig_hash = f"SIG-{hashlib.sha256(sig_material.encode('utf-8')).hexdigest()[:12].upper()}"
+
     c["status"] = override.decision
     c["supervisor_override"] = {
         "authorized_by": override.supervisor_id,
         "decision": override.decision,
         "memo": override.supervisor_memo,
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
-        "signature_hash": f"SIG-{abs(hash(override.case_id + override.supervisor_memo)) % 10000000:07d}"
+        "signature_hash": sig_hash
     }
     c["decision_notes"] += f" | [SUPERVISOR OVERRIDE ({override.supervisor_id}): {override.supervisor_memo}]"
+
+    # Synchronize with engine internal ledger and KPI counters
+    engine.record_supervisor_override(
+        case_id=override.case_id,
+        decision=override.decision,
+        reason=override.supervisor_memo,
+        reviewer_id=override.supervisor_id
+    )
 
     # Stage for ERP if approved
     if "APPROVED" in override.decision:

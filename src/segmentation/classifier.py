@@ -33,16 +33,19 @@ NOISE_TITLE_PATTERNS = [
     r"restore pages"
 ]
 
+_NOISE_APP_COMPILED = [re.compile(p, re.IGNORECASE) for p in NOISE_APP_PATTERNS]
+_NOISE_TITLE_COMPILED = [re.compile(p, re.IGNORECASE) for p in NOISE_TITLE_PATTERNS]
+
 
 def is_noise_event(event: RawEvent) -> bool:
     app = (event.app_name or "").lower()
     title = (event.window_title or "").lower()
 
-    for p in NOISE_APP_PATTERNS:
-        if re.search(p, app):
+    for p in _NOISE_APP_COMPILED:
+        if p.search(app):
             return True
-    for p in NOISE_TITLE_PATTERNS:
-        if re.search(p, title):
+    for p in _NOISE_TITLE_COMPILED:
+        if p.search(title):
             return True
     return False
 
@@ -277,6 +280,17 @@ class ProcessClassifier:
         }
     ]
 
+    def __init__(self):
+        self._compiled_rules = []
+        for r in self.LABEL_RULES:
+            self._compiled_rules.append({
+                "label": r["label"],
+                "button_patterns": [str(bp).lower() for bp in r.get("button_patterns", [])],
+                "url_patterns": [(up, re.compile(up, re.IGNORECASE)) for up in r.get("url_patterns", [])],
+                "title_patterns": [(tp, re.compile(tp, re.IGNORECASE)) for tp in r.get("title_patterns", [])],
+                "doc_patterns": [(dp, re.compile(dp, re.IGNORECASE)) for dp in r.get("doc_patterns", [])],
+            })
+
     def classify_event_with_evidence(self, event: RawEvent) -> Optional[Tuple[str, float, str]]:
         """
         Classifies an event, returning (label, confidence, evidence_source) or None.
@@ -289,31 +303,31 @@ class ProcessClassifier:
 
         # 1. Action Element / Button (Highest Precision) -> 0.95
         if btn:
-            for rule in self.LABEL_RULES:
+            for rule in self._compiled_rules:
                 for bp in rule["button_patterns"]:
                     if bp in btn:
                         return rule["label"], 0.95, f"button:{bp}"
 
         # 2. Browser Tab URL Route -> 0.85
         if url and url != "about:blank":
-            for rule in self.LABEL_RULES:
-                for up in rule["url_patterns"]:
-                    if re.search(up, url):
-                        return rule["label"], 0.85, f"url:{up}"
+            for rule in self._compiled_rules:
+                for up_raw, up_pat in rule["url_patterns"]:
+                    if up_pat.search(url):
+                        return rule["label"], 0.85, f"url:{up_raw}"
 
         # 3. Document Title -> 0.75
         if title:
-            for rule in self.LABEL_RULES:
-                for dp in rule["doc_patterns"]:
-                    if re.search(dp, title):
-                        return rule["label"], 0.75, f"doc:{dp}"
+            for rule in self._compiled_rules:
+                for dp_raw, dp_pat in rule["doc_patterns"]:
+                    if dp_pat.search(title):
+                        return rule["label"], 0.75, f"doc:{dp_raw}"
 
         # 4. Core Window Title -> 0.60
         if title and not url:
-            for rule in self.LABEL_RULES:
-                for tp in rule["title_patterns"]:
-                    if re.search(tp, title):
-                        return rule["label"], 0.60, f"title:{tp}"
+            for rule in self._compiled_rules:
+                for tp_raw, tp_pat in rule["title_patterns"]:
+                    if tp_pat.search(title):
+                        return rule["label"], 0.60, f"title:{tp_raw}"
 
         return None
 

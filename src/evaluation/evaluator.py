@@ -85,6 +85,9 @@ class SegmentationEvaluator:
             pred_label = canonicalize_label(predicted[p_idx].label)
             gt_obj = valid_gt[g_idx]
             gt_label = canonicalize_label(gt_obj.family_name or gt_obj.code)
+            if label_mapping:
+                pred_label = label_mapping.get(pred_label, pred_label)
+                gt_label = label_mapping.get(gt_label, gt_label)
 
             matched_pairs.append((pred_label, gt_label))
             if pred_label == gt_label:

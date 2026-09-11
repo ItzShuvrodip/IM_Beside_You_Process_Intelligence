@@ -85,6 +85,64 @@ class TestPayrollAutomationEngine(unittest.TestCase):
         self.assertEqual(summary["rejected"], 1)
         self.assertEqual(summary["flagged_for_review"], 1)
 
+    def test_supervisor_override_stats_synchronization(self):
+        item = {
+            "case_id": "TEST-OVR-01",
+            "employee_id": "E103",
+            "employee_name": "Employee 03",
+            "contract_type": "regular",
+            "base_salary": 200000,
+            "custom_deduction": 50000,
+            "deduction_reason": "Advance repayment"
+        }
+        rec = self.engine.process_item(item)
+        self.assertEqual(rec["status"], "FLAGGED_FOR_REVIEW")
+        rep_before = self.engine.get_summary_report()
+        flagged_before = rep_before["flagged_for_review"]
+        approved_before = rep_before["auto_approved"]
+
+        # Apply override
+        ovr = self.engine.record_supervisor_override(
+            case_id="TEST-OVR-01",
+            decision="SUPERVISOR_APPROVED",
+            reason="Signed repayment authorization verified"
+        )
+        self.assertIsNotNone(ovr)
+        self.assertEqual(ovr["status"], "SUPERVISOR_APPROVED")
+
+        rep_after = self.engine.get_summary_report()
+        self.assertEqual(rep_after["flagged_for_review"], flagged_before - 1)
+        self.assertEqual(rep_after["auto_approved"], approved_before + 1)
+
+    def test_audit_logger_disk_hydration(self):
+        import tempfile
+        from src.audit.audit_logger import AuditLogger
+        with tempfile.NamedTemporaryFile(suffix=".jsonl", delete=False) as tf:
+            temp_p = Path(tf.name)
+
+        try:
+            logger1 = AuditLogger(temp_p)
+            logger1.log_evaluation(
+                case_id="TEMP-01",
+                input_data={"test": 1},
+                status="AUTO_APPROVED",
+                policy_version="1.0",
+                decision_notes="Approved",
+                calculated_details={},
+                audit_trail=[]
+            )
+            self.assertEqual(len(logger1.records), 1)
+
+            # Re-instantiate logger on same file to test hydration
+            logger2 = AuditLogger(temp_p)
+            self.assertEqual(len(logger2.records), 1)
+            self.assertEqual(logger2.records[0]["case_id"], "TEMP-01")
+            self.assertEqual(logger2.records_count, 1)
+            self.assertEqual(logger2.last_hash, logger1.last_hash)
+        finally:
+            if temp_p.exists():
+                temp_p.unlink()
+
 
 if __name__ == "__main__":
     unittest.main()

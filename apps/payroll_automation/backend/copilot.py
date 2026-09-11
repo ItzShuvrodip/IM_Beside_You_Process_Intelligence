@@ -148,15 +148,15 @@ class PolicyCopilot:
         q_lower = query.lower()
         matched_rules: List[Dict[str, Any]] = []
 
-        if any(k in q_lower for k in ["commute", "travel", "train", "tax", "150000", "transit"]):
+        if any(k in q_lower for k in ["commute", "travel", "train", "tax", "150000", "transit", "通勤", "定期代", "交通費"]):
             matched_rules.append(CORPORATE_POLICY_RULES["commute_allowance"])
-        if any(k in q_lower for k in ["telework", "remote", "wfh", "250", "home"]):
+        if any(k in q_lower for k in ["telework", "remote", "wfh", "250", "home", "在宅", "テレワーク", "リモート"]):
             matched_rules.append(CORPORATE_POLICY_RULES["telework_allowance"])
-        if any(k in q_lower for k in ["housing", "rent", "outsourcing", "article 4", "gyomu"]):
+        if any(k in q_lower for k in ["housing", "rent", "outsourcing", "article 4", "gyomu", "住宅", "家賃", "補助"]):
             matched_rules.append(CORPORATE_POLICY_RULES["housing_subsidy"])
-        if any(k in q_lower for k in ["social", "insurance", "pension", "health", "deduction"]):
+        if any(k in q_lower for k in ["social", "insurance", "pension", "health", "deduction", "社保", "健康保険", "厚生年金"]):
             matched_rules.append(CORPORATE_POLICY_RULES["statutory_deductions"])
-        if any(k in q_lower for k in ["custom", "20%", "repayment", "equipment", "lease"]):
+        if any(k in q_lower for k in ["custom", "20%", "repayment", "equipment", "lease", "任意控除", "返済", "控除"]):
             matched_rules.append(CORPORATE_POLICY_RULES["custom_deductions"])
 
         if not matched_rules:

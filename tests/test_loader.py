@@ -39,6 +39,31 @@ class TestSessionDataLoader(unittest.TestCase):
         events = loader.load_events()
         self.assertTrue(len(events) > 0, "No events loaded from dataset_b session")
 
+    def test_iter_events_generator(self):
+        sessions = [d for d in self.a_dir.iterdir() if d.is_dir()]
+        self.assertTrue(len(sessions) > 0)
+        loader = SessionDataLoader(sessions[0])
+        gen = loader.iter_events()
+        first_event = next(gen)
+        self.assertIsNotNone(first_event.event_id)
+        self.assertGreater(first_event.timestamp_ms, 0)
+
+    def test_invalid_session_path_resilience(self):
+        bogus_path = self.a_dir / "non_existent_session_folder_xyz"
+        loader = SessionDataLoader(bogus_path)
+        self.assertEqual(loader.load_events(), [])
+        self.assertEqual(list(loader.iter_events()), [])
+        self.assertEqual(loader.load_ground_truth(), [])
+
+    def test_segment_is_valid_property(self):
+        from src.ingestion.models import Segment
+        valid_seg = Segment("s1", "2026-07-01T10:00:00Z", "2026-07-01T10:05:00Z", "payroll_deduction_adjustment")
+        self.assertTrue(valid_seg.is_valid)
+        self.assertEqual(valid_seg.duration_seconds, 300.0)
+
+        invalid_seg = Segment("s1", "2026-07-01T10:05:00Z", "2026-07-01T10:00:00Z", "payroll_deduction_adjustment")
+        self.assertFalse(invalid_seg.is_valid)
+
 
 if __name__ == "__main__":
     unittest.main()

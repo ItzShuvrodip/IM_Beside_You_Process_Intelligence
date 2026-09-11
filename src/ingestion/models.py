@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, Dict, Any, List
 
 
@@ -8,8 +8,13 @@ def format_iso_utc(ts: str) -> str:
     if not ts:
         return ""
     clean = ts.replace("Z", "+00:00")
-    dt = datetime.fromisoformat(clean)
-    return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+    try:
+        dt = datetime.fromisoformat(clean)
+        if dt.tzinfo is not None:
+            dt = dt.astimezone(timezone.utc)
+        return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+    except Exception:
+        return ts
 
 
 @dataclass
@@ -79,6 +84,14 @@ class Segment:
     @property
     def duration_seconds(self) -> float:
         return max(0.0, (self.end_dt - self.start_dt).total_seconds())
+
+    @property
+    def is_valid(self) -> bool:
+        """Validates that interval has non-empty identity and non-negative duration."""
+        try:
+            return bool(self.session_id and self.start and self.end and self.label and self.start_dt <= self.end_dt)
+        except Exception:
+            return False
 
     def to_dict(self) -> Dict[str, Any]:
         """Outputs strict standardized deliverable schema compatible with all consumers."""

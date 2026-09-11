@@ -1,4 +1,5 @@
 import logging
+import threading
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timezone
 from src.automation.domain.payroll_rules import validate_payroll_item, POLICY_METADATA
@@ -15,6 +16,7 @@ class PayrollDecisionService:
         self.hr_adapter = hr_adapter or MockHRSystemAdapter()
         self.processed_records: List[Dict[str, Any]] = []
         self._processed_by_case_id: Dict[str, Dict[str, Any]] = {}
+        self._lock = threading.RLock()
         self.stats = {
             "total_processed": 0,
             "auto_approved": 0,
@@ -23,16 +25,17 @@ class PayrollDecisionService:
         }
 
     def process_item(self, item: Dict[str, Any]) -> Dict[str, Any]:
-        case_id = item.get("case_id")
-        if not case_id:
-            case_id = f"AUTO-PI-{self.stats['total_processed'] + 1:04d}"
-            item["case_id"] = case_id
+        with self._lock:
+            case_id = item.get("case_id")
+            if not case_id:
+                case_id = f"AUTO-PI-{self.stats['total_processed'] + 1:04d}"
+                item["case_id"] = case_id
 
-        # Idempotency check: return cached record if already processed
-        if case_id in self._processed_by_case_id:
-            return self._processed_by_case_id[case_id]
+            # Idempotency check: return cached record if already processed
+            if case_id in self._processed_by_case_id:
+                return self._processed_by_case_id[case_id]
 
-        self.stats["total_processed"] += 1
+            self.stats["total_processed"] += 1
 
         is_approved, status_msg, calc_details = validate_payroll_item(item)
 
@@ -110,20 +113,40 @@ class PayrollDecisionService:
         reason: str,
         reviewer_id: str = "HR_SUPERVISOR_01"
     ) -> Optional[Dict[str, Any]]:
-        for rec in reversed(self.processed_records):
-            if rec["case_id"] == case_id:
-                orig_status = rec["status"]
-                rec["status"] = decision
-                rec["decision_notes"] += f" | [SUPERVISOR OVERRIDE ({reviewer_id}): {reason}]"
-                self.audit_logger.log_override(
-                    case_id=case_id,
-                    original_status=orig_status,
-                    override_decision=decision,
-                    reason=reason,
-                    reviewer_id=reviewer_id
-                )
-                return rec
-        return None
+        with self._lock:
+            for rec in reversed(self.processed_records):
+                if rec["case_id"] == case_id:
+                    orig_status = rec["status"]
+                    rec["status"] = decision
+                    rec["decision_notes"] += f" | [SUPERVISOR OVERRIDE ({reviewer_id}): {reason}]"
+
+                    # Adjust statistical counters to match new status
+                    def _category(st: str) -> Optional[str]:
+                        st_u = st.upper()
+                        if "APPROVED" in st_u:
+                            return "auto_approved"
+                        if "FLAG" in st_u:
+                            return "flagged_for_review"
+                        if "REJECT" in st_u:
+                            return "rejected"
+                        return None
+
+                    old_cat = _category(orig_status)
+                    new_cat = _category(decision)
+                    if old_cat and old_cat in self.stats and self.stats[old_cat] > 0:
+                        self.stats[old_cat] -= 1
+                    if new_cat and new_cat in self.stats:
+                        self.stats[new_cat] += 1
+
+                    self.audit_logger.log_override(
+                        case_id=case_id,
+                        original_status=orig_status,
+                        override_decision=decision,
+                        reason=reason,
+                        reviewer_id=reviewer_id
+                    )
+                    return rec
+            return None
 
     def get_summary_report(self) -> Dict[str, Any]:
         tot = max(1, self.stats["total_processed"])

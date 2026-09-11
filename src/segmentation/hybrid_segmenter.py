@@ -79,9 +79,12 @@ class HybridSegmenter:
         def flush_cluster(cluster: List[RawEvent], had_neural_trigger: bool):
             if not cluster or len(cluster) < self.min_segment_events:
                 return
-            t_start = cluster[0].datetime_utc
-            t_end = cluster[-1].datetime_utc
-            duration = (t_end - t_start).total_seconds()
+            if cluster[0].timestamp_ms > 0 and cluster[-1].timestamp_ms > 0:
+                duration = max(0.0, (cluster[-1].timestamp_ms - cluster[0].timestamp_ms) / 1000.0)
+            else:
+                t_start = cluster[0].datetime_utc
+                t_end = cluster[-1].datetime_utc
+                duration = (t_end - t_start).total_seconds()
             if duration < self.min_segment_seconds:
                 return
 
@@ -126,7 +129,10 @@ class HybridSegmenter:
                 continue
 
             prev_ev = current_cluster[-1]
-            gap_seconds = (ev.datetime_utc - prev_ev.datetime_utc).total_seconds()
+            if ev.timestamp_ms > 0 and prev_ev.timestamp_ms > 0:
+                gap_seconds = max(0.0, (ev.timestamp_ms - prev_ev.timestamp_ms) / 1000.0)
+            else:
+                gap_seconds = (ev.datetime_utc - prev_ev.datetime_utc).total_seconds()
 
             # Trigger 1: Inactivity gap
             is_gap = gap_seconds > self.dwell_gap_seconds
@@ -192,7 +198,10 @@ class HybridSegmenter:
 
     def process_all_sessions(self, dataset_dir: Path) -> List[Segment]:
         all_segments: List[Segment] = []
-        sessions = sorted([d for d in Path(dataset_dir).iterdir() if d.is_dir()])
+        p = Path(dataset_dir)
+        if not p.exists() or not p.is_dir():
+            return []
+        sessions = sorted([d for d in p.iterdir() if d.is_dir()])
         for s in sessions:
             segs = self.process_session(s)
             all_segments.extend(segs)
