@@ -234,6 +234,28 @@ class TestStandalonePayrollApp(unittest.TestCase):
         self.assertIn("copilot_recommendation", explanation)
         self.assertIn("findings", explanation)
 
+    def test_copilot_audit_and_docx_features(self) -> None:
+        """Test batch payment conflict auditing and docx inspection."""
+        res_audit = self.client.post("/api/copilot/audit_conflicts")
+        self.assertEqual(res_audit.status_code, 200)
+        audit = res_audit.json()
+        self.assertIn("total_cases_audited", audit)
+        self.assertIn("financial_exposure", audit)
+        self.assertIn("conflicting_cases", audit)
+        self.assertEqual(audit["policy_document"], "gyomu_itaku_kyuuyo_kitei.docx")
+
+        res_doc = self.client.get("/api/copilot/policy_doc")
+        self.assertEqual(res_doc.status_code, 200)
+        doc = res_doc.json()
+        self.assertEqual(doc["filename"], "gyomu_itaku_kyuuyo_kitei.docx")
+        self.assertGreaterEqual(len(doc["articles"]), 5)
+
+        res_docx_query = self.client.post("/api/copilot/query", json={"query": "Check problems and conflicts in payments seeing the docx"})
+        self.assertEqual(res_docx_query.status_code, 200)
+        data = res_docx_query.json()
+        self.assertIn("audit_summary", data)
+        self.assertIn("response_markdown", data)
+
     def test_copilot_zero_base_salary_resilience(self) -> None:
         """Verify copilot does not raise ZeroDivisionError when base salary is 0."""
         from apps.payroll_automation.backend.copilot import PolicyCopilot
@@ -328,6 +350,48 @@ class TestStandalonePayrollApp(unittest.TestCase):
         self.assertIn("affected_claims_count", sim_data)
         self.assertGreaterEqual(sim_data["total_claims_simulated"], 1)
 
+    def test_copilot_bilingual_conversation_and_japanese_switch(self) -> None:
+        """Verify Copilot switches conversation language to natural Japanese when lang='ja'."""
+        # 1. Greeting in Japanese
+        res_greet_ja = self.client.post("/api/copilot/query", json={"query": "こんにちは", "lang": "ja"})
+        self.assertEqual(res_greet_ja.status_code, 200)
+        data_ja = res_greet_ja.json()
+        self.assertEqual(data_ja["lang"], "ja")
+        self.assertIn("AIコパイロット（日本語対話モード）", data_ja["response_markdown"])
+        self.assertIn("gyomu_itaku_kyuuyo_kitei.docx", data_ja["response_markdown"])
+
+        # 2. English query asked while lang='ja' switches talking language to Japanese
+        res_en_in_ja = self.client.post("/api/copilot/query", json={"query": "What are the rules for commute allowance?", "lang": "ja"})
+        self.assertEqual(res_en_in_ja.status_code, 200)
+        data_commute_ja = res_en_in_ja.json()
+        self.assertEqual(data_commute_ja["lang"], "ja")
+        self.assertIn("第3条（通勤交通費）", data_commute_ja["response_markdown"])
+        self.assertIn("150,000円", data_commute_ja["response_markdown"])
+
+        # 3. Japanese conflict audit endpoint
+        res_audit_ja = self.client.post("/api/copilot/audit_conflicts?lang=ja")
+        self.assertEqual(res_audit_ja.status_code, 200)
+        audit_ja = res_audit_ja.json()
+        self.assertEqual(audit_ja["lang"], "ja")
+        self.assertIn("不支給対象・住宅手当違反額（第4条）", audit_ja["financial_exposure"]["exposure_headline_ja"])
+
+        # 4. Supervisor override draft in Japanese
+        res_cases = self.client.get("/api/cases?status=ALL")
+        first_case_id = res_cases.json()["records"][0]["case_id"]
+        res_memo_ja = self.client.post(f"/api/copilot/draft_override?case_id={first_case_id}&supervisor_name=給与審査責任者&lang=ja")
+        self.assertEqual(res_memo_ja.status_code, 200)
+        memo_data = res_memo_ja.json()
+        self.assertEqual(memo_data["lang"], "ja")
+        self.assertIn("【特別承認決裁書（業務委託・給与控除等取扱い規程 第14条）】", memo_data["draft_memo"])
+
+        # 5. Verify translate_decision_notes helper
+        from apps.payroll_automation.backend.copilot import PolicyCopilot
+        copilot_inst = PolicyCopilot()
+        raw_note = "REJECTED: Housing subsidy not permissible for outsourcing or part-time staff per article 4"
+        translated = copilot_inst.translate_decision_notes(raw_note, lang="ja")
+        self.assertIn("規程第4条に基づき業務委託・パートへの住宅手当は支給不可", translated)
+
 
 if __name__ == "__main__":
     unittest.main()
+

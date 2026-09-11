@@ -643,23 +643,53 @@
         <svg style="width: 18px; height: 18px; stroke: var(--brand-accent); fill: none; stroke-width: 2;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
         <div>
           <h4 style="font-size: 0.88rem; font-weight: 700;" data-i18n="copilot_title">Labor Policy Copilot</h4>
-          <span style="font-size: 0.7rem; color: var(--text-secondary);" data-i18n="copilot_sub">Japanese Labor Law & Corporate Policy Grounded</span>
+          <span style="font-size: 0.7rem; color: var(--text-secondary);" data-i18n="copilot_sub">Grounded in gyomu_itaku_kyuuyo_kitei.docx</span>
         </div>
       </div>
-      <button id="btn-close-copilot" class="btn btn-icon" style="border: none; background: transparent;">
+      <button id="btn-close-copilot" class="btn btn-icon" style="border: none; background: transparent;" title="Close Copilot">
         <svg style="width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2;" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
     </div>
 
+    <!-- Navigation Tabs -->
+    <div class="copilot-nav-tabs">
+      <button id="tab-copilot-chat" class="copilot-nav-tab active" onclick="switchCopilotTab('chat')">AI Chat & Audit</button>
+      <button id="tab-copilot-doc" class="copilot-nav-tab" onclick="switchCopilotTab('doc')">📄 gyomu_itaku_kyuuyo_kitei.docx</button>
+    </div>
+
+    <!-- Quick Action Chips -->
+    <div id="copilot-quick-actions" class="copilot-quick-bar">
+      <button class="copilot-quick-btn" onclick="executeCopilotAction('audit')">🔍 Audit All Payments vs Docx</button>
+      <button class="copilot-quick-btn" onclick="executeCopilotAction('conflicts')">⚠️ Show Conflicts</button>
+      <button class="copilot-quick-btn" onclick="executeCopilotAction('housing')">🏠 Art. 4 Housing Rules</button>
+      <button class="copilot-quick-btn" onclick="executeCopilotAction('commute')">🚆 Art. 3 Commute Cap</button>
+      <button class="copilot-quick-btn" onclick="executeCopilotAction('memo')">📝 Draft Override Memo</button>
+    </div>
+
+    <!-- Interactive Chat Stream -->
     <div id="copilot-messages" class="copilot-stream">
-      <div class="copilot-bubble assistant">
-        Welcome to the <strong>Payroll Policy Copilot</strong>. This reasoning assistant is grounded in Japanese Income Tax Act Article 21, Labor Standards Act Article 24, and corporate <em>Gyomu Itaku Kyuuyo Kitei</em> compensation guidelines.<br /><br />
-        Enter queries regarding commuting tax caps, outsourcing allowances, or request an explanation of any flagged claim ID.
+      <div id="copilot-welcome-bubble" class="copilot-bubble assistant">
+        <strong>Labor Policy Copilot Online</strong><br />
+        Grounded in <code>gyomu_itaku_kyuuyo_kitei.docx</code> (Contractor & Payroll Deduction Regulations) and Japanese Labor Standards / Income Tax Acts.<br /><br />
+        • Click <strong>🔍 Audit All Payments vs Docx</strong> to scan active records for contract violations.<br />
+        • Click <strong>Copilot</strong> on any table record to analyze specific payment discrepancies.<br />
+        • Switch to <strong>📄 gyomu_itaku_kyuuyo_kitei.docx</strong> to read the codified rules.
       </div>
     </div>
 
-    <div class="copilot-input-dock">
-      <input type="text" id="copilot-input" class="search-input" style="flex: 1;" placeholder="Inquire regarding statutory rules or case references..." />
+    <!-- Document Viewer Pane -->
+    <div id="copilot-doc-viewer" class="copilot-doc-view">
+      <div style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 4px;">
+        Codified source: <strong>gyomu_itaku_kyuuyo_kitei.docx</strong> (Version 2026.04-v1.2)
+      </div>
+      <div id="copilot-articles-list" style="display: flex; flex-direction: column; gap: 8px;">
+        <!-- Dynamically loaded articles -->
+      </div>
+    </div>
+
+    <!-- Input Dock -->
+    <div id="copilot-dock" class="copilot-input-dock">
+      <input type="text" id="copilot-input" class="search-input" style="flex: 1;" placeholder="Ask about payment conflicts, docx rules, or enter case ID..." />
       <button id="btn-copilot-send" class="btn btn-primary" data-i18n="copilot_send">Send</button>
     </div>
   </aside>

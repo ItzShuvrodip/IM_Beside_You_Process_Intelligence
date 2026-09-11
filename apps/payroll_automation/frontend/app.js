@@ -7667,6 +7667,76 @@ function setLang(lang) {
         searchInput.placeholder = dict.search_placeholder;
     }
 
+    // Update Copilot Drawer Bilingual Elements
+    const tabChat = document.getElementById('tab-copilot-chat');
+    const tabDoc = document.getElementById('tab-copilot-doc');
+    const copilotInput = document.getElementById('copilot-input');
+    const quickBar = document.getElementById('copilot-quick-actions');
+    const copilotSub = document.querySelector('[data-i18n="copilot_sub"]');
+    const welcomeBubble = document.getElementById('copilot-welcome-bubble');
+
+    if (lang === 'ja') {
+        if (tabChat) tabChat.textContent = 'AI対話・規程監査';
+        if (tabDoc) tabDoc.textContent = '📄 業務委託・給与規程 原文';
+        if (copilotInput) copilotInput.placeholder = '規程の違反チェック、条文の照会、案件IDを入力...';
+        if (copilotSub) copilotSub.textContent = '「業務委託・給与控除等取扱い規程」準拠';
+        if (quickBar) {
+            quickBar.innerHTML = `
+                <button class="copilot-quick-btn" onclick="executeCopilotAction('audit')">🔍 全申請の規程照合監査</button>
+                <button class="copilot-quick-btn" onclick="executeCopilotAction('conflicts')">⚠️ 違反・不整合一覧</button>
+                <button class="copilot-quick-btn" onclick="executeCopilotAction('housing')">🏠 第4条 住宅手当制限</button>
+                <button class="copilot-quick-btn" onclick="executeCopilotAction('commute')">🚆 第3条 交通費非課税枠</button>
+                <button class="copilot-quick-btn" onclick="executeCopilotAction('memo')">📝 特別承認稟議書作成</button>
+            `;
+        }
+        if (welcomeBubble) {
+            welcomeBubble.innerHTML = `
+                <strong>労働法規・規程照合 AIコパイロット稼働中</strong><br />
+                社内規程 <code>gyomu_itaku_kyuuyo_kitei.docx</code>（業務委託・給与控除等取扱い規程）および日本の労働基準法・所得税法に準拠しています。<br /><br />
+                • 上部の「<strong>🔍 全申請の規程照合監査</strong>」をクリックすると、現在の申請データの規程違反を一括スキャンします。<br />
+                • 各申請行の「<strong>コパイロット</strong>」をクリックすると、案件ごとの詳細違反理由・差分を照会できます。<br />
+                • 「<strong>📄 業務委託・給与規程 原文</strong>」タブで条文原文を確認できます。
+            `;
+        }
+    } else {
+        if (tabChat) tabChat.textContent = 'AI Chat & Audit';
+        if (tabDoc) tabDoc.textContent = '📄 gyomu_itaku_kyuuyo_kitei.docx';
+        if (copilotInput) copilotInput.placeholder = 'Ask about payment conflicts, docx rules, or enter case ID...';
+        if (copilotSub) copilotSub.textContent = 'Grounded in gyomu_itaku_kyuuyo_kitei.docx';
+        if (quickBar) {
+            quickBar.innerHTML = `
+                <button class="copilot-quick-btn" onclick="executeCopilotAction('audit')">🔍 Audit All Payments vs Docx</button>
+                <button class="copilot-quick-btn" onclick="executeCopilotAction('conflicts')">⚠️ Show Conflicts</button>
+                <button class="copilot-quick-btn" onclick="executeCopilotAction('housing')">🏠 Art. 4 Housing Rules</button>
+                <button class="copilot-quick-btn" onclick="executeCopilotAction('commute')">🚆 Art. 3 Commute Cap</button>
+                <button class="copilot-quick-btn" onclick="executeCopilotAction('memo')">📝 Draft Override Memo</button>
+            `;
+        }
+        if (welcomeBubble) {
+            welcomeBubble.innerHTML = `
+                <strong>Labor Policy Copilot Online</strong><br />
+                Grounded in <code>gyomu_itaku_kyuuyo_kitei.docx</code> (Contractor & Payroll Deduction Regulations) and Japanese Labor Standards / Income Tax Acts.<br /><br />
+                • Click <strong>🔍 Audit All Payments vs Docx</strong> to scan active records for contract violations.<br />
+                • Click <strong>Copilot</strong> on any table record to analyze specific payment discrepancies.<br />
+                • Switch to <strong>📄 gyomu_itaku_kyuuyo_kitei.docx</strong> to read the codified rules.
+            `;
+        }
+    }
+
+    if (window._prevLang && window._prevLang !== lang) {
+        addCopilotMessage(lang === 'ja' ?
+            '🇯🇵 <strong>AIコパイロットの対話言語を「日本語」に設定しました。</strong><br />「業務委託・給与控除等取扱い規程（gyomu_itaku_kyuuyo_kitei.docx）」に基づく給与支給チェック、契約違反監査、特別承認理由書の起案を行います。' :
+            '🇺🇸 <strong>AI Copilot language switched to English.</strong><br />Ready to assist with statutory audit queries, Article 4 housing regulations, and Article 3 commute caps.',
+            'assistant'
+        );
+    }
+    window._prevLang = lang;
+
+    if (_copilotDocLoaded) {
+        _copilotDocLoaded = false;
+        loadPolicyDocView();
+    }
+
     // Refresh active views
     renderClaimsTable();
     renderExceptionsTable();
@@ -7976,6 +8046,21 @@ function formatStatusPill(status) {
     return `<span class="status-pill ${badgeClass}">${label}</span>`;
 }
 
+function formatDecisionNotes(notes, lang) {
+    if (!notes) return '';
+    const isJa = (lang || state.lang) === 'ja';
+    if (!isJa) return notes;
+
+    let text = notes;
+    text = text.replace(/AUTO_APPROVED:\s*Passed all statutory and corporate policy validation checks/g, '【自動承認】社内規程および法定要件の全バリデーションに適合');
+    text = text.replace(/FLAG_REVIEW:\s*Commute exceeds statutory tax-exempt cap \((\d+) > (\d+) JPY\)/g, '【要確認】通勤費が所得税法第21条非課税枠（150,000円）を超過（申請: ¥$1）');
+    text = text.replace(/FLAG_REVIEW:\s*Custom deduction exceeds 20% of base salary \((\d+) JPY\) - requires supervisor authorization/g, '【要確認】任意控除額が規程第11条の基本給20%制限を超過（控除: ¥$1）- 上長決裁が必要');
+    text = text.replace(/REJECTED:\s*Housing subsidy not permissible for outsourcing or part-time staff per article 4/g, '【規程違反却下】規程第4条に基づき業務委託・パートへの住宅手当は支給不可（支給額0円）');
+    text = text.replace(/FLAG_REVIEW:\s*Custom deduction without documented business justification/g, '【要確認】規程第11条に基づく業務上の正当理由メモ未添付');
+    text = text.replace(/SUPERVISOR OVERRIDE \((.*?)\):\s*(.*)/g, '【上長特認 ($1)】$2');
+    return text;
+}
+
 // Rendering Logic
 function renderAllViews() {
     updateKpis();
@@ -8081,7 +8166,7 @@ function renderClaimsTable() {
                 <div style="font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-mono);">${inp.employee_id} · <span>${formatContractType(inp.contract_type)}</span></div>
             </td>
             <td>${formatStatusPill(c.status)}</td>
-            <td style="font-size: 0.78rem; color: var(--text-secondary); max-width: 320px; line-height: 1.4;">${c.decision_notes}</td>
+            <td style="font-size: 0.78rem; color: var(--text-secondary); max-width: 320px; line-height: 1.4;">${formatDecisionNotes(c.decision_notes)}</td>
             <td class="num-cell" style="color: var(--success-text);">${gross}</td>
             <td class="num-cell" style="color: var(--danger-text);">${ded}</td>
             <td class="num-cell" style="font-weight: 700; color: var(--brand-accent);">${net}</td>
@@ -8120,7 +8205,7 @@ function renderExceptionsTable() {
                 <div style="font-weight: 600;">${inp.employee_name}</div>
                 <div style="font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-mono);">${inp.employee_id} · <span>${formatContractType(inp.contract_type)}</span></div>
             </td>
-            <td style="font-size: 0.78rem; color: var(--warning-text); font-family: var(--font-mono); line-height: 1.4;">${c.decision_notes}</td>
+            <td style="font-size: 0.78rem; color: var(--warning-text); font-family: var(--font-mono); line-height: 1.4;">${formatDecisionNotes(c.decision_notes)}</td>
             <td class="num-cell" style="color: var(--success-text);">${gross}</td>
             <td class="num-cell" style="color: var(--danger-text);">${ded}</td>
             <td class="num-cell" style="font-weight: 700;">${net}</td>
@@ -8184,7 +8269,7 @@ function renderAuditLedger() {
             <td>${formatStatusPill(c.status)}</td>
             <td style="font-size: 0.78rem;">${actorLabel}</td>
             <td style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--brand-accent);">${hash}</td>
-            <td style="font-size: 0.75rem; color: var(--text-secondary); max-width: 260px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${c.decision_notes}</td>
+            <td style="font-size: 0.75rem; color: var(--text-secondary); max-width: 260px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${formatDecisionNotes(c.decision_notes)}</td>
         `;
         tbody.appendChild(tr);
     });
@@ -8287,6 +8372,7 @@ function openOverrideModal(caseId) {
     if (!c) return;
     state.currentCaseForOverride = c;
 
+    const isJa = state.lang === 'ja';
     const inp = c.input_data || {};
     const calc = c.calculated_details || {};
 
@@ -8300,13 +8386,13 @@ function openOverrideModal(caseId) {
     const elNotes = document.getElementById('modal-decision-notes');
 
     if (elCaseId) elCaseId.innerText = c.case_id;
-    if (elEmployee) elEmployee.innerText = `${inp.employee_name} (${inp.employee_id} · ${inp.contract_type})`;
+    if (elEmployee) elEmployee.innerText = `${inp.employee_name} (${inp.employee_id} · ${formatContractType(inp.contract_type)})`;
     if (elGross) elGross.innerText = `+¥${(calc.total_gross_addition || 0).toLocaleString()}`;
     if (elNet) elNet.innerText = `¥${(calc.net_adjustment || 0).toLocaleString()}`;
-    if (elReasons) elReasons.innerText = c.decision_notes;
-    if (elBasis) elBasis.innerText = 'Income Tax Act Art. 21, Labor Standards Act Art. 24, Internal Regulations §14';
+    if (elReasons) elReasons.innerText = formatDecisionNotes(c.decision_notes);
+    if (elBasis) elBasis.innerText = isJa ? '所得税法第21条、労働基準法第24条、就業規則および業務委託規程第14条' : 'Income Tax Act Art. 21, Labor Standards Act Art. 24, Internal Regulations §14';
     if (elBadge) elBadge.innerText = c.status;
-    if (elNotes) elNotes.value = `Authorized exceptional variance per Board Directive 2026-04; verified with Division Director.`;
+    if (elNotes) elNotes.value = isJa ? '役員会特認通達2026-04および規程第14条に基づき、例外支給を裁量承認。部門長合意確認済。' : `Authorized exceptional variance per Board Directive 2026-04; verified with Division Director.`;
 
     const modal = document.getElementById('override-modal');
     if (modal) modal.classList.add('active');
@@ -8364,25 +8450,415 @@ async function submitOverride() {
     showToast(`Case ${caseId} override recorded locally: ${decisionCode}`, 'success');
 }
 
-// AI Policy Copilot Assistant
+// =========================================================================
+// AI Labor Policy Copilot Assistant (gyomu_itaku_kyuuyo_kitei.docx Grounded)
+// =========================================================================
+
+let _copilotDocLoaded = false;
+
 function toggleCopilot() {
     const drawer = document.getElementById('copilot-chat');
-    if (drawer) drawer.classList.toggle('open');
+    if (drawer) {
+        drawer.classList.toggle('open');
+        if (drawer.classList.contains('open')) {
+            const container = document.getElementById('copilot-messages');
+            if (container) container.scrollTop = container.scrollHeight;
+        }
+    }
 }
 
-function consultCopilotForCase(caseId) {
+function switchCopilotTab(tab) {
+    const chatTab = document.getElementById('tab-copilot-chat');
+    const docTab = document.getElementById('tab-copilot-doc');
+    const messages = document.getElementById('copilot-messages');
+    const quickBar = document.getElementById('copilot-quick-actions');
+    const dock = document.getElementById('copilot-dock');
+    const docViewer = document.getElementById('copilot-doc-viewer');
+
+    if (tab === 'chat') {
+        if (chatTab) chatTab.classList.add('active');
+        if (docTab) docTab.classList.remove('active');
+        if (messages) messages.style.display = 'flex';
+        if (quickBar) quickBar.style.display = 'flex';
+        if (dock) dock.style.display = 'flex';
+        if (docViewer) docViewer.classList.remove('active');
+    } else {
+        if (chatTab) chatTab.classList.remove('active');
+        if (docTab) docTab.classList.add('active');
+        if (messages) messages.style.display = 'none';
+        if (quickBar) quickBar.style.display = 'none';
+        if (dock) dock.style.display = 'none';
+        if (docViewer) docViewer.classList.add('active');
+        if (!_copilotDocLoaded) loadPolicyDocView();
+    }
+}
+
+async function loadPolicyDocView() {
+    const container = document.getElementById('copilot-articles-list');
+    if (!container) return;
+    const isJa = state.lang === 'ja';
+    container.innerHTML = `<div style="font-size:0.75rem; color:var(--text-muted); padding:10px;">${isJa ? '「業務委託・給与控除等取扱い規程」条文を読込中...' : 'Loading codified rules from gyomu_itaku_kyuuyo_kitei.docx...'}</div>`;
+
+    try {
+        const res = await fetch(`/api/copilot/policy_doc?lang=${state.lang || 'en'}`);
+        if (res.ok) {
+            const data = await res.json();
+            _copilotDocLoaded = true;
+            let html = '';
+            (data.articles || []).forEach(art => {
+                html += `
+                    <div class="copilot-doc-article">
+                        <div class="copilot-doc-header">
+                            <span style="font-weight:700; font-size:0.80rem; color:var(--brand-accent);">${art.article_no}: ${art.title}</span>
+                            <span class="badge" style="font-size:0.65rem; background:var(--bg-surface-subtle);">${art.source_doc}</span>
+                        </div>
+                        <p style="font-size:0.75rem; color:var(--text-secondary); margin:4px 0;">${art.summary}</p>
+                        ${art.statutory_law ? `<div style="font-size:0.68rem; color:var(--text-muted);"><strong>${isJa ? '法的根拠' : 'Statutory Basis'}:</strong> ${art.statutory_law}</div>` : ''}
+                        ${art.conflict_criteria ? `<div style="font-size:0.68rem; color:#ef4444;"><strong>${isJa ? '違反検知基準' : 'Conflict Trigger'}:</strong> ${art.conflict_criteria}</div>` : ''}
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            return;
+        }
+    } catch (e) {
+        console.warn('Could not load policy doc from API:', e);
+    }
+
+    // Fallback documentation render
+    if (isJa) {
+        container.innerHTML = `
+            <div class="copilot-doc-article">
+                <div class="copilot-doc-header"><span style="font-weight:700; font-size:0.80rem;">第3条: 通勤交通費の取扱い</span></div>
+                <p style="font-size:0.75rem; color:var(--text-secondary);">所得税法第21条に基づき月額150,000円まで非課税。超過分は課税算入または特認。</p>
+            </div>
+            <div class="copilot-doc-article">
+                <div class="copilot-doc-header"><span style="font-weight:700; font-size:0.80rem; color:#ef4444;">第4条: 住宅手当の資格制限</span></div>
+                <p style="font-size:0.75rem; color:var(--text-secondary);">正社員・契約社員限定。業務委託（Gyomu Itaku）およびパート従業員には支給不可（支給額0円）。</p>
+            </div>
+            <div class="copilot-doc-article">
+                <div class="copilot-doc-header"><span style="font-weight:700; font-size:0.80rem;">第7条: 在宅勤務手当</span></div>
+                <p style="font-size:0.75rem; color:var(--text-secondary);">日額250円、月間上限20日（5,000円）まで支給。</p>
+            </div>
+            <div class="copilot-doc-article">
+                <div class="copilot-doc-header"><span style="font-weight:700; font-size:0.80rem;">第11条: 任意控除制限</span></div>
+                <p style="font-size:0.75rem; color:var(--text-secondary);">労基法第24条に基づき基本給の20%上限。業務上の理由書添付必須。</p>
+            </div>
+        `;
+    } else {
+        container.innerHTML = `
+            <div class="copilot-doc-article">
+                <div class="copilot-doc-header"><span style="font-weight:700; font-size:0.80rem;">Article 3: Commute Allowance</span></div>
+                <p style="font-size:0.75rem; color:var(--text-secondary);">Tax-exempt up to ¥150,000/mo (Income Tax Act Art. 21). Surplus is taxable.</p>
+            </div>
+            <div class="copilot-doc-article">
+                <div class="copilot-doc-header"><span style="font-weight:700; font-size:0.80rem; color:#ef4444;">Article 4: Housing Subsidy Restrictions</span></div>
+                <p style="font-size:0.75rem; color:var(--text-secondary);">Strictly regular/contract only. Outsourcing contractors (Gyomu Itaku) are prohibited from receiving housing allowance.</p>
+            </div>
+            <div class="copilot-doc-article">
+                <div class="copilot-doc-header"><span style="font-weight:700; font-size:0.80rem;">Article 7: Telework Allowance</span></div>
+                <p style="font-size:0.75rem; color:var(--text-secondary);">¥250/day up to ¥5,000 monthly ceiling (20 eligible days).</p>
+            </div>
+            <div class="copilot-doc-article">
+                <div class="copilot-doc-header"><span style="font-weight:700; font-size:0.80rem;">Article 11: Custom Deductions</span></div>
+                <p style="font-size:0.75rem; color:var(--text-secondary);">Max 20% of base salary (LSA Art. 24). Requires mandatory justification memo.</p>
+            </div>
+        `;
+    }
+}
+
+async function executeCopilotAction(action) {
+    switchCopilotTab('chat');
+    const isJa = state.lang === 'ja';
+
+    if (action === 'audit') {
+        addCopilotMessage(isJa ? '🔍 <em>「業務委託・給与控除等取扱い規程」と全申請データの照合監査を実行中...</em>' : '🔍 <em>Scanning all active payment claims against <code>gyomu_itaku_kyuuyo_kitei.docx</code>...</em>', 'user');
+        try {
+            const res = await fetch(`/api/copilot/audit_conflicts?lang=${state.lang || 'en'}`, { method: 'POST' });
+            if (res.ok) {
+                const audit = await res.json();
+                renderAuditSummaryCard(audit);
+                return;
+            }
+        } catch (e) {
+            console.warn('Audit conflicts API error:', e);
+        }
+        // Fallback calculation from local state
+        const conflicts = state.cases.filter(c => c.status !== 'AUTO_APPROVED');
+        if (isJa) {
+            addCopilotMessage(`
+                <strong>規程照合監査完了（ローカルデータ）</strong><br />
+                • 監査件数: <strong>${state.cases.length}件</strong><br />
+                • 違反・不整合検知: <strong>${conflicts.length}件</strong><br />
+                • 準拠規程: <code>gyomu_itaku_kyuuyo_kitei.docx</code><br />
+                各申請行の <strong>コパイロット</strong> ボタンより、第4条（住宅手当）や第3条（交通費）の詳細違反をご確認いただけます。
+            `, 'assistant');
+        } else {
+            addCopilotMessage(`
+                <strong>Batch Audit Complete (Local Telemetry)</strong><br />
+                • Audited: <strong>${state.cases.length} claims</strong><br />
+                • Conflicts Identified: <strong>${conflicts.length} claims</strong><br />
+                • Governing Doc: <code>gyomu_itaku_kyuuyo_kitei.docx</code><br />
+                Click on any case's <strong>Copilot</strong> button to view specific Article 4 / Article 3 violations.
+            `, 'assistant');
+        }
+    } else if (action === 'conflicts') {
+        addCopilotMessage(isJa ? '⚠️ <em>不整合・規程違反のある申請案件一覧を表示</em>' : '⚠️ <em>Show all conflicting payment records</em>', 'user');
+        const conflicts = state.cases.filter(c => c.status === 'FLAGGED_FOR_REVIEW' || c.status === 'REJECTED');
+        if (conflicts.length === 0) {
+            addCopilotMessage(isJa ? '現在取り込まれているバッチ内に未解決の規程違反案件はありません。' : 'No unresolved payment conflicts found in active batch.', 'assistant');
+            return;
+        }
+        let msg = isJa ? `<strong>不整合・規程違反が検知された案件（全 ${conflicts.length}件）:</strong><br /><br />` : `<strong>Found ${conflicts.length} Payment Claims with Conflicts:</strong><br /><br />`;
+        conflicts.slice(0, 5).forEach(c => {
+            const inp = c.input_data || {};
+            msg += `• <strong>${c.case_id}</strong> (${inp.employee_name}, ${formatContractType(inp.contract_type)}): ${formatDecisionNotes(c.decision_notes)}<br />`;
+            msg += `<button class="copilot-action-btn primary" style="margin: 3px 0 8px 12px;" onclick="consultCopilotForCase('${c.case_id}')">${isJa ? '規程違反を監査' : 'Audit Conflict'}</button><br />`;
+        });
+        if (conflicts.length > 5) {
+            msg += isJa ? `<em>(...他 ${conflicts.length - 5} 件は例外トリアージ画面で確認可能)</em>` : `<em>(...and ${conflicts.length - 5} more conflicting claims in Exception Desk)</em>`;
+        }
+        addCopilotMessage(msg, 'assistant');
+    } else if (action === 'housing') {
+        submitCopilotDirectQuery(isJa ? '業務委託（Gyomu Itaku）による住宅手当の申請に関する第4条の規程を教えて' : 'What does gyomu_itaku_kyuuyo_kitei.docx Article 4 say about housing subsidies for outsourcing?');
+    } else if (action === 'commute') {
+        submitCopilotDirectQuery(isJa ? '第3条の通勤交通費および所得税法第21条の非課税限度額15万円の取扱いについて教えて' : 'Explain Article 3 commuter pass allowance and the statutory ¥150,000 cap.');
+    } else if (action === 'memo') {
+        const firstFlagged = state.cases.find(c => c.status === 'FLAGGED_FOR_REVIEW');
+        if (firstFlagged) {
+            consultCopilotForCase(firstFlagged.case_id);
+            setTimeout(() => generateDraftMemoInChat(firstFlagged.case_id), 400);
+        } else {
+            addCopilotMessage(isJa ? '現在、特別承認を要する保留案件はありません。' : 'No currently flagged claims requiring supervisor override memo.', 'assistant');
+        }
+    }
+}
+
+function renderAuditSummaryCard(audit) {
+    const isJa = state.lang === 'ja' || audit.lang === 'ja';
+    const disallowed = (audit.financial_exposure && audit.financial_exposure.total_disallowed_funds_jpy) || 0;
+    const excessCommute = (audit.financial_exposure && audit.financial_exposure.total_excess_taxable_commute_jpy) || 0;
+    const cats = audit.category_summary || {};
+
+    let html = `
+        <div style="font-weight:700; font-size:0.88rem; color:var(--brand-accent); margin-bottom:4px;">
+            ${isJa ? '📊 給与申請・規程照合監査レポート' : '📊 Payment Conflict Audit Report'}
+        </div>
+        <div style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:8px;">
+            ${isJa ? '準拠規程' : 'Codified Document'}: <code>${audit.policy_document}</code>
+        </div>
+        <div class="copilot-variance-grid">
+            <div class="copilot-variance-box">
+                <div class="copilot-variance-label">${isJa ? '監査件数' : 'Audited Claims'}</div>
+                <div class="copilot-variance-val" style="color:var(--brand-primary);">${audit.total_cases_audited}</div>
+            </div>
+            <div class="copilot-variance-box">
+                <div class="copilot-variance-label">${isJa ? '違反・不整合' : 'Conflicts'}</div>
+                <div class="copilot-variance-val" style="color:#ef4444;">${audit.conflict_case_count}</div>
+            </div>
+            <div class="copilot-variance-box">
+                <div class="copilot-variance-label">${isJa ? '規程適合率' : 'Compliance Rate'}</div>
+                <div class="copilot-variance-val" style="color:#10b981;">${audit.compliance_rate_pct}%</div>
+            </div>
+        </div>
+        <div style="font-size:0.76rem; margin: 8px 0;">
+            • <strong>${isJa ? '不支給対象・住宅手当違反額（第4条）' : 'Disallowed Housing Subsidies (Art. 4)'}:</strong> <span style="color:#ef4444; font-weight:700;">¥${disallowed.toLocaleString()}</span> (${cats.housing_violation || 0}${isJa ? '件' : ' violations'})<br />
+            • <strong>${isJa ? '通勤交通費・課税振替超過額（第3条）' : 'Excess Taxable Commute (Art. 3)'}:</strong> <span style="color:#f59e0b; font-weight:700;">¥${excessCommute.toLocaleString()}</span> (${cats.commute_cap_breach || 0}${isJa ? '件' : ' claims over ¥150k'})<br />
+            • <strong>${isJa ? '任意控除20%超過案件（第11条）' : 'Custom Deduction 20% Breaches (Art. 11)'}:</strong> ${cats.custom_deduction_cap || 0}${isJa ? '件' : ' claims'}<br />
+            • <strong>${isJa ? '理由書未添付案件（第11条）' : 'Missing Justification Memos (Art. 11)'}:</strong> ${cats.missing_memo || 0}${isJa ? '件' : ' claims'}
+        </div>
+        <div style="font-size:0.76rem; font-weight:700; margin-top:8px;">${isJa ? '主な対応要請案件:' : 'Top Conflicting Cases:'}</div>
+    `;
+
+    (audit.conflicting_cases || []).slice(0, 4).forEach(c => {
+        html += `
+            <div style="margin: 4px 0; padding: 6px 8px; background:var(--bg-surface-subtle); border-radius:4px; font-size:0.72rem; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <strong>${c.case_id}</strong> (${c.employee_name}, <em>${formatContractType(c.contract_type)}</em>)<br />
+                    <span style="color:#ef4444;">${formatDecisionNotes(c.decision_notes).slice(0, 70)}...</span>
+                </div>
+                <button class="copilot-action-btn primary" onclick="consultCopilotForCase('${c.case_id}')">${isJa ? '監査' : 'Audit'}</button>
+            </div>
+        `;
+    });
+
+    addCopilotMessage(html, 'assistant');
+}
+
+async function consultCopilotForCase(caseId) {
     const c = state.cases.find(item => item.case_id === caseId);
     if (!c) return;
 
     toggleCopilot();
-    addCopilotMessage(`Statutory compliance analysis for <strong>${caseId}</strong> (${c.input_data.employee_name}):`, 'assistant');
+    switchCopilotTab('chat');
+    const isJa = state.lang === 'ja';
 
-    setTimeout(() => {
-        let msg = `<strong>Record Status:</strong> ${c.status}<br /><br />`;
-        msg += `<strong>Audit Trail:</strong> ${c.decision_notes}<br /><br />`;
-        msg += `<strong>Statutory Citation:</strong> Japanese Income Tax Act Article 21 (¥150,000 tax-free commute ceiling) and Gyomu Itaku Kyuuyo Kitei Article 4.`;
+    const inp = c.input_data || {};
+    addCopilotMessage(isJa ? `🔍 <em>案件 <strong>${caseId}</strong>（${inp.employee_name || '申請者'}）の規程照合監査を実行中...</em>` : `🔍 <em>Inspecting policy compliance for <strong>${caseId}</strong> (${inp.employee_name || 'Staff'})...</em>`, 'user');
+
+    if (state.isApiLive) {
+        try {
+            const res = await fetch('/api/copilot/explain', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ case_id: caseId, lang: state.lang || 'en' })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                renderCaseExplanationCard(data, c);
+                return;
+            }
+        } catch (e) {
+            console.warn('API copilot explain failed:', e);
+        }
+    }
+
+    // Fallback local explanation
+    renderLocalCaseExplanation(c);
+}
+
+function renderCaseExplanationCard(data, caseObj) {
+    const isJa = state.lang === 'ja' || data.lang === 'ja';
+    const inp = caseObj.input_data || {};
+    const calc = caseObj.calculated_details || {};
+    const isViolation = data.status === 'REJECTED';
+    const isReview = data.status === 'FLAGGED_FOR_REVIEW';
+    const statusColor = isViolation ? '#ef4444' : isReview ? '#f59e0b' : '#10b981';
+
+    let html = `
+        <div class="copilot-conflict-card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:700; font-size:0.86rem; color:var(--brand-accent);">${data.case_id}</span>
+                <span class="badge" style="background:${statusColor}; color:#ffffff; font-size:0.68rem; font-weight:700; padding:2px 6px; border-radius:3px;">${data.status}</span>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-secondary);">
+                <strong>${isJa ? '対象者' : 'Employee'}:</strong> ${data.employee_name || inp.employee_name} (${data.employee_id || inp.employee_id}) · <em>${formatContractType(data.contract_type || inp.contract_type)}</em><br />
+                <strong>${isJa ? '準拠規程' : 'Governing Doc'}:</strong> <code>${data.source_document || 'gyomu_itaku_kyuuyo_kitei.docx'}</code>
+            </div>
+    `;
+
+    if (data.findings && data.findings.length > 0) {
+        html += `<div style="font-weight:700; font-size:0.76rem; margin-top:4px;">${isJa ? '条文違反および監査所見:' : 'Codified Rule Violations & Findings:'}</div>`;
+        data.findings.forEach(f => {
+            const isCrit = f.severity === 'REJECTED' || f.severity === 'CRITICAL_VIOLATION';
+            html += `
+                <div class="copilot-conflict-item ${isCrit ? '' : 'review'}">
+                    <div style="font-weight:700; color:${isCrit ? '#ef4444' : '#d97706'}; font-size:0.74rem;">[${f.severity}] ${f.category}</div>
+                    <div style="font-size:0.72rem; margin:2px 0;">${f.detail}</div>
+                    <div style="font-size:0.66rem; color:var(--text-muted);">${isJa ? '規程条項' : 'Ref'}: ${f.rule_ref}</div>
+                </div>
+            `;
+        });
+    } else {
+        html += `
+            <div class="copilot-conflict-item review" style="border-left-color:#10b981;">
+                <div style="font-weight:700; color:#10b981; font-size:0.74rem;">[PASSED] ${isJa ? '規程適合' : '100% Policy Compliant'}</div>
+                <div style="font-size:0.72rem;">${isJa ? '「業務委託・給与控除等取扱い規程」に照らし、規程違反は認められません。' : 'No statutory or corporate policy violations detected against gyomu_itaku_kyuuyo_kitei.docx.'}</div>
+            </div>
+        `;
+    }
+
+    // Variance Grid
+    const claimedCommute = inp.claimed_commute || 0;
+    const claimedHousing = inp.claimed_housing || 0;
+    const appCommute = calc.approved_commute !== undefined ? calc.approved_commute : Math.min(claimedCommute, 150000);
+    const appHousing = calc.approved_housing !== undefined ? calc.approved_housing : (inp.contract_type === 'outsourcing' ? 0 : claimedHousing);
+
+    html += `
+        <div class="copilot-variance-grid">
+            <div class="copilot-variance-box">
+                <div class="copilot-variance-label">${isJa ? '申請通勤費' : 'Claimed Commute'}</div>
+                <div class="copilot-variance-val">¥${claimedCommute.toLocaleString()}</div>
+                <div style="font-size:0.62rem; color:var(--text-muted);">${isJa ? '上限: 15万円' : 'Cap: ¥150k'}</div>
+            </div>
+            <div class="copilot-variance-box">
+                <div class="copilot-variance-label">${isJa ? '申請住宅手当' : 'Claimed Housing'}</div>
+                <div class="copilot-variance-val" style="color:${inp.contract_type === 'outsourcing' && claimedHousing > 0 ? '#ef4444' : 'inherit'};">¥${claimedHousing.toLocaleString()}</div>
+                <div style="font-size:0.62rem; color:var(--text-muted);">${inp.contract_type === 'outsourcing' ? (isJa ? '支給不可(第4条)' : 'Disallowed (Art.4)') : (isJa ? '支給対象' : 'Permitted')}</div>
+            </div>
+            <div class="copilot-variance-box">
+                <div class="copilot-variance-label">${isJa ? '差引支給調整額' : 'Net Adjustment'}</div>
+                <div class="copilot-variance-val" style="color:var(--brand-accent);">¥${(calc.net_adjustment || 0).toLocaleString()}</div>
+            </div>
+        </div>
+    `;
+
+    html += `
+        <div style="font-size:0.74rem; background:var(--bg-surface); padding:6px 8px; border-radius:4px; border-left:3px solid var(--brand-primary); margin-top:2px;">
+            <strong>${isJa ? 'コパイロット推奨対応' : 'Recommendation'}:</strong> ${data.copilot_recommendation || (isJa ? '標準ワークフローに従って処理してください。' : 'Proceed per standard workflow.')}
+        </div>
+        <div class="copilot-card-actions">
+            <button class="copilot-action-btn primary" onclick="generateDraftMemoInChat('${data.case_id}')">${isJa ? '📝 特別承認稟議書を作成' : '📝 Draft Override Memo'}</button>
+            <button class="copilot-action-btn" onclick="openOverrideModal('${data.case_id}')">${isJa ? '⚡ 上長決裁デスクで処理' : '⚡ Resolve in Supervisor Desk'}</button>
+        </div>
+    </div>
+    `;
+
+    addCopilotMessage(html, 'assistant');
+}
+
+function renderLocalCaseExplanation(c) {
+    const isJa = state.lang === 'ja';
+    const inp = c.input_data || {};
+    const calc = c.calculated_details || {};
+    if (isJa) {
+        let msg = `<strong>案件 ${c.case_id}（${inp.employee_name}）の規程照合監査結果:</strong><br /><br />`;
+        msg += `• <strong>判定ステータス:</strong> ${formatStatusPill(c.status)}<br />`;
+        msg += `• <strong>監査所見:</strong> ${formatDecisionNotes(c.decision_notes)}<br />`;
+        msg += `• <strong>契約区分:</strong> ${formatContractType(inp.contract_type)}<br />`;
+        msg += `• <strong>準拠条項:</strong> <code>gyomu_itaku_kyuuyo_kitei.docx</code> 第4条（住宅手当制限）および第3条（通勤交通費）。<br /><br />`;
+        msg += `<div class="copilot-card-actions"><button class="copilot-action-btn primary" onclick="openOverrideModal('${c.case_id}')">⚡ 上長決裁デスクで処理</button></div>`;
         addCopilotMessage(msg, 'assistant');
-    }, 200);
+    } else {
+        let msg = `<strong>Compliance Analysis for ${c.case_id} (${inp.employee_name}):</strong><br /><br />`;
+        msg += `• <strong>Status:</strong> ${formatStatusPill(c.status)}<br />`;
+        msg += `• <strong>Audit Trail:</strong> ${c.decision_notes}<br />`;
+        msg += `• <strong>Contract:</strong> ${formatContractType(inp.contract_type)}<br />`;
+        msg += `• <strong>Document Reference:</strong> <code>gyomu_itaku_kyuuyo_kitei.docx</code> Article 4 (Housing) & Article 3 (Commute).<br /><br />`;
+        msg += `<div class="copilot-card-actions"><button class="copilot-action-btn primary" onclick="openOverrideModal('${c.case_id}')">⚡ Open in Supervisor Desk</button></div>`;
+        addCopilotMessage(msg, 'assistant');
+    }
+}
+
+async function generateDraftMemoInChat(caseId) {
+    const isJa = state.lang === 'ja';
+    try {
+        const supv = isJa ? '給与審査責任者' : 'Lead HR Specialist';
+        const res = await fetch(`/api/copilot/draft_override?case_id=${encodeURIComponent(caseId)}&supervisor_name=${encodeURIComponent(supv)}&lang=${state.lang || 'en'}`, {
+            method: 'POST'
+        });
+        if (res.ok) {
+            const data = await res.json();
+            const draft = data.draft_memo;
+            addCopilotMessage(`
+                <strong>${isJa ? '特別承認稟議書が生成されました（規程第14条）:' : 'Compliance Override Memo Generated (gyomu_itaku_kyuuyo_kitei.docx §14):'}</strong><br />
+                <pre style="background:var(--bg-surface); padding:8px; border-radius:4px; font-size:0.72rem; white-space:pre-wrap; margin:6px 0; border:1px solid var(--border-subtle);">${draft}</pre>
+                <div class="copilot-card-actions">
+                    <button class="copilot-action-btn primary" onclick="applyDraftMemoToModal('${caseId}', ${JSON.stringify(draft).replace(/"/g, '&quot;')})">${isJa ? '決裁モーダルへ転記' : 'Apply to Supervisor Modal'}</button>
+                </div>
+            `, 'assistant');
+            return;
+        }
+    } catch (e) {
+        console.warn('Draft memo API error:', e);
+    }
+    addCopilotMessage(isJa ? `案件 ${caseId} に対する第14条特別裁量承認稟議書を作成しました。` : `Draft Memo generated for ${caseId} under Article 14 discretionary authority.`, 'assistant');
+}
+
+function applyDraftMemoToModal(caseId, memoText) {
+    const isJa = state.lang === 'ja';
+    openOverrideModal(caseId);
+    const notesInput = document.getElementById('modal-decision-notes');
+    if (notesInput) {
+        notesInput.value = memoText;
+    }
+    showToast(isJa ? `特別承認稟議メモを決裁モーダルに転記しました (${caseId})` : `Draft memo inserted into Supervisor Modal for ${caseId}`, 'success');
+}
+
+function submitCopilotDirectQuery(queryText) {
+    const input = document.getElementById('copilot-input');
+    if (input) input.value = queryText;
+    submitCopilotQuery();
 }
 
 function submitCopilotQuery() {
@@ -8395,20 +8871,35 @@ function submitCopilotQuery() {
     input.value = '';
 
     setTimeout(async () => {
+        const activeLang = state.lang || 'en';
+        const isJa = activeLang === 'ja';
+
         if (state.isApiLive) {
             try {
                 const res = await fetch('/api/copilot/query', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ query: q })
+                    body: JSON.stringify({ query: q, lang: activeLang })
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    let msg = `<strong>Statutory Reference (Policy ${data.policy_version}):</strong><br /><br />`;
-                    (data.matches || []).forEach(m => {
-                        msg += `• <strong>${m.rule_id || 'RULE'}</strong>: ${m.description || m.rule_name || ''}<br />`;
-                    });
-                    addCopilotMessage(msg, 'assistant');
+                    if (data.audit_summary) {
+                        renderAuditSummaryCard(data.audit_summary);
+                        return;
+                    }
+                    if (data.case_details) {
+                        const caseObj = state.cases.find(c => c.case_id === data.case_details.case_id) || {};
+                        renderCaseExplanationCard(data.case_details, caseObj);
+                        return;
+                    }
+                    let md = data.response_markdown || '';
+                    if (!md && data.matches) {
+                        md = isJa ? `<strong>【社内規程（gyomu_itaku_kyuuyo_kitei.docx）照会結果】:</strong><br /><br />` : `<strong>Statutory Reference (gyomu_itaku_kyuuyo_kitei.docx):</strong><br /><br />`;
+                        data.matches.forEach(m => {
+                            md += `• <strong>${m.rule_id || 'RULE'} (${m.article || ''})</strong>: ${m.description || ''}<br />`;
+                        });
+                    }
+                    addCopilotMessage(renderMarkdownToHtml(md), 'assistant');
                     return;
                 }
             } catch (e) {
@@ -8416,18 +8907,71 @@ function submitCopilotQuery() {
             }
         }
 
-        // Local response fallback
+        // Local fallback logic
         const ql = q.toLowerCase();
-        if (ql.includes('commute') || ql.includes('transit') || ql.includes('travel')) {
-            addCopilotMessage(`Under Income Tax Act Article 21, commuter pass allowances are tax-exempt up to <strong>¥150,000 per month</strong>. Any excess must be categorized as taxable wage additions or flagged for supervisor verification.`, 'assistant');
-        } else if (ql.includes('housing') || ql.includes('rent')) {
-            addCopilotMessage(`Under <strong>Article 4 of Gyomu Itaku Kyuuyo Kitei</strong>, housing subsidies are contractually restricted to regular and direct contract personnel. Outsourcing (Gyomu Itaku) contractors are strictly prohibited from receiving housing allowances.`, 'assistant');
-        } else if (ql.includes('telework') || ql.includes('remote')) {
-            addCopilotMessage(`Telework allowances are governed under Section 3 at <strong>¥250 per confirmed telework day</strong>, up to a monthly maximum ceiling of <strong>¥5,000</strong>.`, 'assistant');
-        } else {
-            addCopilotMessage(`All payroll calculations are governed under codified <strong>Policy Version 2026.04-v1.2</strong>. Verified standards include: ¥150k commute cap, 20% salary ceiling for voluntary deductions, and Article 4 housing restrictions.`, 'assistant');
+
+        // Greeting detection
+        const isGreeting = ['hello', 'hi', 'hey', 'こんにちは', '初めまして', 'おはよう', 'こんばんは', 'はじめまして'].some(g => ql.includes(g));
+        if (isGreeting && q.length <= 20) {
+            if (isJa) {
+                addCopilotMessage(`
+                    <strong>労働法規・社内規程AIコパイロット（日本語対話モード）</strong><br /><br />
+                    こんにちは！社内規程 <code>gyomu_itaku_kyuuyo_kitei.docx</code>（業務委託・給与控除等取扱い規程）および労働基準法・所得税法に基づき、給与申請データの監査・条文照会・特別承認稟議の作成をお手伝いします。<br /><br />
+                    • 上部クイックボタンまたは「監査」と入力して全件スキャン<br />
+                    • 案件ID（例: <code>PI-PROD-2026-003</code>）を入力して個別照会<br />
+                    • 住宅手当（第4条）や交通費（第3条）について自由にご質問ください。
+                `, 'assistant');
+                return;
+            } else {
+                addCopilotMessage(`
+                    <strong>Labor Policy Copilot Online</strong><br /><br />
+                    Hello! Grounded in <code>gyomu_itaku_kyuuyo_kitei.docx</code> (Contractor & Payroll Deduction Regulations) and Japanese Labor Standards / Income Tax Acts.<br /><br />
+                    • Type <strong>audit</strong> to run batch conflict verification<br />
+                    • Enter a Case ID (e.g. <code>PI-PROD-2026-003</code>) to inspect compliance findings<br />
+                    • Ask any questions about Article 4 housing rules or Article 3 commute caps.
+                `, 'assistant');
+                return;
+            }
         }
-    }, 250);
+
+        // Specific case inspection
+        const caseMatch = q.match(/(PI-[A-Z0-9\-]+|EMP-[0-9]+)/i);
+        if (caseMatch) {
+            const cid = caseMatch[1].toUpperCase();
+            const target = state.cases.find(c => c.case_id.toUpperCase() === cid || (c.input_data && c.input_data.employee_id.toUpperCase() === cid));
+            if (target) {
+                renderLocalCaseExplanation(target);
+                return;
+            }
+        }
+
+        if (ql.includes('audit') || ql.includes('conflict') || ql.includes('problem') || ql.includes('issue') || ql.includes('docx') || ql.includes('不整合') || ql.includes('問題') || ql.includes('規程') || ql.includes('監査')) {
+            executeCopilotAction('audit');
+        } else if (ql.includes('commute') || ql.includes('transit') || ql.includes('travel') || ql.includes('通勤') || ql.includes('定期')) {
+            addCopilotMessage(isJa ? `<strong>「業務委託・給与控除等取扱い規程」第3条</strong>および所得税法第21条に基づき、通勤交通費は月額<strong>150,000円</strong>まで非課税となります。超過分は課税対象給与として取り扱うか、上長特認が必要です。` : `Under <strong>Article 3 of gyomu_itaku_kyuuyo_kitei.docx</strong> and Income Tax Act Article 21, commuter pass allowances are tax-exempt up to <strong>¥150,000 per month</strong>. Any excess is capped for non-taxable payment and flagged for taxable wage treatment.`, 'assistant');
+        } else if (ql.includes('housing') || ql.includes('rent') || ql.includes('住宅') || ql.includes('家賃')) {
+            addCopilotMessage(isJa ? `<strong>「業務委託・給与控除等取扱い規程」第4条</strong>に基づき、住宅手当（上限3万円）は正社員・契約社員のみに限定されます。<strong>業務委託（Gyomu Itaku）およびパート従業員には支給されません（支給額0円）</strong>。申請された場合は自動却下対象となります。` : `Under <strong>Article 4 of gyomu_itaku_kyuuyo_kitei.docx</strong>, housing subsidies (up to ¥30,000) are strictly limited to regular and direct contract personnel. <strong>Outsourcing contractors (Gyomu Itaku) are contractually ineligible</strong>; any housing allowance claim submitted by outsourcing staff must be REJECTED.`, 'assistant');
+        } else if (ql.includes('telework') || ql.includes('remote') || ql.includes('在宅') || ql.includes('テレワーク')) {
+            addCopilotMessage(isJa ? `<strong>「業務委託・給与控除等取扱い規程」第7条</strong>に基づき、在宅勤務手当は1日<strong>250円</strong>、月間上限<strong>5,000円</strong>（20日分）まで支給されます。` : `Under <strong>Article 7 of gyomu_itaku_kyuuyo_kitei.docx</strong>, telework allowances are disbursed at <strong>¥250 per confirmed telework day</strong>, up to a monthly maximum ceiling of <strong>¥5,000</strong> (20 eligible days).`, 'assistant');
+        } else if (ql.includes('deduction') || ql.includes('custom') || ql.includes('控除') || ql.includes('任意控除') || ql.includes('メモ') || ql.includes('理由書')) {
+            addCopilotMessage(isJa ? `<strong>「業務委託・給与控除等取扱い規程」第11条</strong>に基づき、任意控除は基本給の20%を上限とし、業務上の正当な理由書メモの添付が必須です。超過または理由書未添付の場合は要確認となります。` : `Under <strong>Article 11 of gyomu_itaku_kyuuyo_kitei.docx</strong>, custom deductions are capped at 20% of base salary and require a mandatory justification memo.`, 'assistant');
+        } else {
+            addCopilotMessage(isJa ? `全給与計算は<strong>「業務委託・給与控除等取扱い規程」（2026.04-v1.2）</strong>に準拠しています。主要基準: 交通費非課税上限15万円、業務委託への住宅手当支給禁止（第4条）、在宅手当上限5千円、および第14条の上長特認決裁手続。` : `All payroll calculations are governed under codified <strong>gyomu_itaku_kyuuyo_kitei.docx</strong> (Version 2026.04-v1.2). Key standards include: ¥150k commute cap, Article 4 housing restrictions for outsourcing, ¥5k telework limit, and Article 14 supervisor override protocols.`, 'assistant');
+        }
+    }, 200);
+}
+
+function renderMarkdownToHtml(text) {
+    if (!text) return '';
+    let html = text
+        .replace(/^### (.*$)/gim, '<h4 style="font-size:0.86rem; font-weight:700; margin:6px 0; color:var(--brand-accent);">$1</h4>')
+        .replace(/^## (.*$)/gim, '<h3 style="font-size:0.92rem; font-weight:700; margin:8px 0; color:var(--brand-primary);">$1</h3>')
+        .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/gim, '<em>$1</em>')
+        .replace(/`([^`]+)`/gim, '<code style="background:var(--bg-surface-subtle); padding:1px 4px; border-radius:3px; font-family:var(--font-mono); font-size:0.75rem;">$1</code>')
+        .replace(/\n\n/gim, '<br /><br />')
+        .replace(/\n/gim, '<br />');
+    return html;
 }
 
 function addCopilotMessage(htmlContent, senderClass) {

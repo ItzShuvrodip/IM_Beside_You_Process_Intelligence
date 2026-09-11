@@ -113,10 +113,12 @@ class SupervisorOverrideModel(BaseModel):
 
 class CopilotQueryModel(BaseModel):
     query: str
+    lang: Optional[str] = "en"
 
 
 class CopilotExplainModel(BaseModel):
     case_id: str
+    lang: Optional[str] = "en"
 
 
 class PolicySimulateRequest(BaseModel):
@@ -751,30 +753,43 @@ def get_audit_ledger():
 
 @app.post("/api/copilot/explain")
 def copilot_explain_case(payload: CopilotExplainModel):
-    """Provides deep AI explanation of policy enforcement for a given case."""
+    """Provides deep AI explanation of policy enforcement for a given case in EN or JA."""
     case = next((c for c in _CURRENT_CASES if c.get("case_id") == payload.case_id), None)
     if not case:
         raise HTTPException(status_code=404, detail="Case not found.")
-    return copilot.explain_case(case)
+    return copilot.explain_case(case, lang=payload.lang or "en")
 
 
 @app.post("/api/copilot/draft_override")
-def copilot_draft_override(case_id: str = Query(...), supervisor_name: str = Query("Lead HR Specialist")):
-    """Auto-drafts a standardized compliance memo for supervisor override."""
+def copilot_draft_override(case_id: str = Query(...), supervisor_name: str = Query("Lead HR Specialist"), lang: str = Query("en")):
+    """Auto-drafts a standardized compliance memo for supervisor override in EN or JA."""
     case = next((c for c in _CURRENT_CASES if c.get("case_id") == case_id), None)
     if not case:
         raise HTTPException(status_code=404, detail="Case not found.")
-    draft = copilot.generate_override_draft(case, supervisor_name)
+    draft = copilot.generate_override_draft(case, supervisor_name, lang=lang)
     return {
         "case_id": case_id,
-        "draft_memo": draft
+        "draft_memo": draft,
+        "lang": lang
     }
 
 
 @app.post("/api/copilot/query")
 def copilot_policy_query(payload: CopilotQueryModel):
-    """Answers arbitrary policy questions regarding corporate and statutory rules."""
-    return copilot.answer_policy_query(payload.query)
+    """Answers arbitrary policy questions regarding corporate and statutory rules with live case context in EN or JA."""
+    return copilot.answer_policy_query(payload.query, _CURRENT_CASES, lang=payload.lang or "en")
+
+
+@app.post("/api/copilot/audit_conflicts")
+def copilot_audit_conflicts(lang: str = Query("en")):
+    """Performs deep scan across active payment records against gyomu_itaku_kyuuyo_kitei.docx in EN or JA."""
+    return copilot.audit_payment_conflicts(_CURRENT_CASES, lang=lang)
+
+
+@app.get("/api/copilot/policy_doc")
+def copilot_get_policy_document(lang: str = Query("en")):
+    """Returns the codified text and articles of gyomu_itaku_kyuuyo_kitei.docx in EN or JA."""
+    return copilot.get_policy_document(lang=lang)
 
 
 # =========================================================================
