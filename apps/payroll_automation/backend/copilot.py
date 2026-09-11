@@ -231,12 +231,32 @@ class PolicyCopilot:
             emp_id = inp.get("employee_id", "Unknown")
             emp_name = inp.get("employee_name", "Unknown")
             contract = inp.get("contract_type", "regular")
-            base_sal = inp.get("base_salary", 0)
-            claimed_commute = inp.get("claimed_commute", 0)
-            telework_days = inp.get("telework_days", 0)
-            claimed_housing = inp.get("claimed_housing", 0)
-            custom_ded = inp.get("custom_deduction", 0)
-            ded_reason = inp.get("deduction_reason", "")
+            try:
+                base_sal = float(inp.get("base_salary") or 0)
+            except (ValueError, TypeError):
+                base_sal = 0.0
+
+            try:
+                claimed_commute = float(inp.get("claimed_commute") or 0)
+            except (ValueError, TypeError):
+                claimed_commute = 0.0
+
+            try:
+                telework_days = int(inp.get("telework_days") or 0)
+            except (ValueError, TypeError):
+                telework_days = 0
+
+            try:
+                claimed_housing = float(inp.get("claimed_housing") or 0)
+            except (ValueError, TypeError):
+                claimed_housing = 0.0
+
+            try:
+                custom_ded = float(inp.get("custom_deduction") or 0)
+            except (ValueError, TypeError):
+                custom_ded = 0.0
+
+            ded_reason = str(inp.get("deduction_reason") or "")
 
             case_conflicts = []
 
@@ -251,7 +271,7 @@ class PolicyCopilot:
                     "claimed": claimed_housing,
                     "permitted": 0,
                     "variance": claimed_housing,
-                    "issue": f"業務委託（{contract}）による住宅手当 ¥{claimed_housing:,} の申請は第4条違反です。業務委託への住宅手当は支給不可（¥0）です。" if is_ja else f"Outsourcing contractor ({contract}) claimed ¥{claimed_housing:,} housing subsidy. Article 4 restricts housing to regular and contract staff.",
+                    "issue": f"業務委託（{contract}）による住宅手当 ¥{claimed_housing:,.0f} の申請は第4条違反です。業務委託への住宅手当は支給不可（¥0）です。" if is_ja else f"Outsourcing contractor ({contract}) claimed ¥{claimed_housing:,.0f} housing subsidy. Article 4 restricts housing to regular and contract staff.",
                     "resolution": "住宅手当を0円として却下、またはERP連携前に控除対象から除外。" if is_ja else "Automatically reject housing claim or zero out before ERP commit."
                 })
 
@@ -267,8 +287,8 @@ class PolicyCopilot:
                     "claimed": claimed_commute,
                     "permitted": 150000,
                     "variance": excess,
-                    "issue": f"通勤定期代の申請額 ¥{claimed_commute:,} が法定非課税上限（150,000円）を ¥{excess:,} 超過しています。" if is_ja else f"Commuter pass claim of ¥{claimed_commute:,} exceeds statutory cap of ¥150,000 by ¥{excess:,}.",
-                    "resolution": "非課税枠は150,000円で上限適用し、超過分 ¥{excess:,} は課税対象として処理するか特認を申請。" if is_ja else f"Cap non-taxable disbursement at ¥150,000 and treat surplus ¥{excess:,} as taxable wages or obtain supervisor sign-off."
+                    "issue": f"通勤定期代の申請額 ¥{claimed_commute:,.0f} が法定非課税上限（150,000円）を ¥{excess:,.0f} 超過しています。" if is_ja else f"Commuter pass claim of ¥{claimed_commute:,.0f} exceeds statutory cap of ¥150,000 by ¥{excess:,.0f}.",
+                    "resolution": "非課税枠は150,000円で上限適用し、超過分 ¥{excess:,.0f} は課税対象として処理するか特認を申請。" if is_ja else f"Cap non-taxable disbursement at ¥150,000 and treat surplus ¥{excess:,.0f} as taxable wages or obtain supervisor sign-off."
                 })
 
             # 3. Telework Allowance Guideline Limit (Article 7 of docx)
@@ -299,7 +319,7 @@ class PolicyCopilot:
                         "claimed": custom_ded,
                         "permitted": int(threshold),
                         "variance": int(custom_ded - threshold),
-                        "issue": f"任意控除額 ¥{custom_ded:,} が基本給の20%基準（¥{threshold:,.0f}）を超過しています。" if is_ja else f"Custom deduction ¥{custom_ded:,} exceeds 20% wage threshold (¥{threshold:,.0f}).",
+                        "issue": f"任意控除額 ¥{custom_ded:,.0f} が基本給の20%基準（¥{threshold:,.0f}）を超過しています。" if is_ja else f"Custom deduction ¥{custom_ded:,.0f} exceeds 20% wage threshold (¥{threshold:,.0f}).",
                         "resolution": "所定の理由書および上長の特別裁量承認が必要です。" if is_ja else "Requires signed supervisor authorization memo."
                     })
                 if not ded_reason:
@@ -323,7 +343,7 @@ class PolicyCopilot:
                     "claimed": 0,
                     "permitted": 0,
                     "variance": 0,
-                    "issue": c.get("decision_notes", "要上長レビュー" if is_ja else "Supervisor review required"),
+                    "issue": c.get("decision_notes") or ("要上長レビュー" if is_ja else "Supervisor review required"),
                     "resolution": "上長電子決裁にて承認または差し戻し" if is_ja else "Review and resolve in Exception Desk"
                 })
 
@@ -335,7 +355,7 @@ class PolicyCopilot:
                     "contract_type": contract,
                     "status": status,
                     "conflicts": case_conflicts,
-                    "decision_notes": self.translate_decision_notes(c.get("decision_notes", ""), lang="ja") if is_ja else c.get("decision_notes", "")
+                    "decision_notes": self.translate_decision_notes(c.get("decision_notes") or "", lang="ja") if is_ja else (c.get("decision_notes") or "")
                 })
 
         return {
@@ -359,14 +379,14 @@ class PolicyCopilot:
     def translate_decision_notes(self, notes: str, lang: str = "en") -> str:
         """Translates standard engine decision notes into Japanese if lang is ja."""
         if lang != "ja" or not notes:
-            return notes
-        t = notes
-        t = re.sub(r"AUTO_APPROVED:\s*Passed all statutory and corporate policy validation checks", "【自動承認】社内規程および法定要件の全バリデーションに適合", t)
-        t = re.sub(r"FLAG_REVIEW:\s*Commute exceeds statutory tax-exempt cap \((\d+) > (\d+) JPY\)", r"【要確認】通勤費が所得税法第21条非課税枠（150,000円）を超過（申請: ¥\1）", t)
-        t = re.sub(r"FLAG_REVIEW:\s*Custom deduction exceeds 20% of base salary \((\d+) JPY\) - requires supervisor authorization", r"【要確認】任意控除額が規程第11条の基本給20%制限を超過（控除: ¥\1）- 上長決裁が必要", t)
-        t = re.sub(r"REJECTED:\s*Housing subsidy not permissible for outsourcing or part-time staff per article 4", "【規程違反却下】規程第4条に基づき業務委託・パートへの住宅手当は支給不可（支給額0円）", t)
-        t = re.sub(r"FLAG_REVIEW:\s*Custom deduction without documented business justification", "【要確認】規程第11条に基づく業務上の正当理由メモ未添付", t)
-        t = re.sub(r"SUPERVISOR OVERRIDE \((.*?)\):\s*(.*)", r"【上長特認 (\1)】\2", t)
+            return notes or ""
+        t = str(notes)
+        t = re.sub(r"AUTO_APPROVED:\s*Passed all statutory and corporate policy validation checks", "【自動承認】社内規程および法定要件の全バリデーションに適合", t, flags=re.IGNORECASE)
+        t = re.sub(r"FLAG_REVIEW:\s*Commute exceeds statutory tax-exempt cap \((\d+) > (\d+) JPY\)", r"【要確認】通勤費が所得税法第21条非課税枠（150,000円）を超過（申請: ¥\1）", t, flags=re.IGNORECASE)
+        t = re.sub(r"FLAG_REVIEW:\s*Custom deduction exceeds 20% of base salary \((\d+) JPY\) - requires supervisor authorization", r"【要確認】任意控除額が規程第11条の基本給20%制限を超過（控除: ¥\1）- 上長決裁が必要", t, flags=re.IGNORECASE)
+        t = re.sub(r"REJECTED:\s*Housing subsidy not permissible for outsourcing or part-time staff per article 4", "【規程違反却下】規程第4条に基づき業務委託・パートへの住宅手当は支給不可（支給額0円）", t, flags=re.IGNORECASE)
+        t = re.sub(r"FLAG_REVIEW:\s*Custom deduction without documented business justification", "【要確認】規程第11条に基づく業務上の正当理由メモ未添付", t, flags=re.IGNORECASE)
+        t = re.sub(r"SUPERVISOR OVERRIDE \((.*?)\):\s*(.*)", r"【上長特認 (\1)】\2", t, flags=re.IGNORECASE)
         return t
 
     def explain_case(self, case: Dict[str, Any], lang: str = "en") -> Dict[str, Any]:
@@ -380,17 +400,36 @@ class PolicyCopilot:
         calc = case.get("calculated_details", {})
         contract = input_data.get("contract_type", "regular")
         status = case.get("status", "UNKNOWN")
-        notes = self.translate_decision_notes(case.get("decision_notes", ""), lang=lang) if is_ja else case.get("decision_notes", "")
+        notes = self.translate_decision_notes(case.get("decision_notes") or "", lang=lang) if is_ja else (case.get("decision_notes") or "")
 
-        claimed_commute = input_data.get("claimed_commute", 0)
-        claimed_housing = input_data.get("claimed_housing", 0)
-        custom_ded = input_data.get("custom_deduction", 0)
-        base_salary = input_data.get("base_salary", 0)
-        telework_days = input_data.get("telework_days", 0)
+        try:
+            claimed_commute = float(input_data.get("claimed_commute") or 0)
+        except (ValueError, TypeError):
+            claimed_commute = 0.0
+
+        try:
+            claimed_housing = float(input_data.get("claimed_housing") or 0)
+        except (ValueError, TypeError):
+            claimed_housing = 0.0
+
+        try:
+            custom_ded = float(input_data.get("custom_deduction") or 0)
+        except (ValueError, TypeError):
+            custom_ded = 0.0
+
+        try:
+            base_salary = float(input_data.get("base_salary") or 0)
+        except (ValueError, TypeError):
+            base_salary = 0.0
+
+        try:
+            telework_days = int(input_data.get("telework_days") or 0)
+        except (ValueError, TypeError):
+            telework_days = 0
 
         findings: List[Dict[str, str]] = []
         conflicts_detected: List[Dict[str, Any]] = []
-        doc_citations: List[Dict[str, str]] = []
+        doc_citations: List[Dict[str, Any]] = []
         recommendation = ""
 
         # Analyze Commute
@@ -400,7 +439,7 @@ class PolicyCopilot:
                 "category": "通勤手当非課税限度枠" if is_ja else "Commute Allowance",
                 "severity": "FLAG_REVIEW",
                 "rule_ref": "規程第3条 / 所得税法第21条 (上限: ¥150,000)" if is_ja else "gyomu_itaku_kyuuyo_kitei.docx Article 3 & Income Tax Act Art. 21",
-                "detail": f"申請額 ¥{claimed_commute:,} は法定非課税上限（150,000円）を ¥{diff:,} 超過しています。非課税支給額を150,000円に制限し、超過分 ¥{diff:,} を課税対象給与としてレビュー対象に設定しました。" if is_ja else f"Claimed ¥{claimed_commute:,} exceeds statutory tax-exempt threshold of ¥150,000 by ¥{diff:,}. The engine capped approved non-taxable amount at ¥150,000 and flagged the surplus ¥{diff:,} for taxable treatment."
+                "detail": f"申請額 ¥{claimed_commute:,.0f} は法定非課税上限（150,000円）を ¥{diff:,.0f} 超過しています。非課税支給額を150,000円に制限し、超過分 ¥{diff:,.0f} を課税対象給与としてレビュー対象に設定しました。" if is_ja else f"Claimed ¥{claimed_commute:,.0f} exceeds statutory tax-exempt threshold of ¥150,000 by ¥{diff:,.0f}. The engine capped approved non-taxable amount at ¥150,000 and flagged the surplus ¥{diff:,.0f} for taxable treatment."
             })
             conflicts_detected.append({
                 "field": "claimed_commute",
@@ -418,7 +457,7 @@ class PolicyCopilot:
                 "category": "住宅手当の資格制限" if is_ja else "Housing Allowance",
                 "severity": "REJECTED",
                 "rule_ref": "gyomu_itaku_kyuuyo_kitei.docx 第4条" if is_ja else "gyomu_itaku_kyuuyo_kitei.docx Article 4",
-                "detail": f"業務委託（{contract}）は規程上、住宅補助の支給対象外です。申請額 ¥{claimed_housing:,} は第4条に基づき自動却下されました。" if is_ja else f"Outsourcing ({contract}) personnel are contractually barred from claiming company housing subsidies. Claim of ¥{claimed_housing:,} violates Article 4 and was automatically denied."
+                "detail": f"業務委託（{contract}）は規程上、住宅補助の支給対象外です。申請額 ¥{claimed_housing:,.0f} は第4条に基づき自動却下されました。" if is_ja else f"Outsourcing ({contract}) personnel are contractually barred from claiming company housing subsidies. Claim of ¥{claimed_housing:,.0f} violates Article 4 and was automatically denied."
             })
             conflicts_detected.append({
                 "field": "claimed_housing",
@@ -437,7 +476,7 @@ class PolicyCopilot:
                 "category": "在宅勤務手当" if is_ja else "Telework Overhead",
                 "severity": "AUTO_CAPPED",
                 "rule_ref": "規程第7条 (上限: ¥5,000)" if is_ja else "gyomu_itaku_kyuuyo_kitei.docx Article 7",
-                "detail": f"申請日数 {telework_days}日（¥{telework_days*250:,}）に対し、第7条の月間上限20日（5,000円）が適用されました。" if is_ja else f"Telework declared for {telework_days} days (¥{telework_days*250:,}). Capped to 20 days maximum (¥5,000) per Article 7."
+                "detail": f"申請日数 {telework_days}日（¥{telework_days*250:,.0f}）に対し、第7条の月間上限20日（5,000円）が適用されました。" if is_ja else f"Telework declared for {telework_days} days (¥{telework_days*250:,.0f}). Capped to 20 days maximum (¥5,000) per Article 7."
             })
             conflicts_detected.append({
                 "field": "telework_days",
@@ -458,7 +497,7 @@ class PolicyCopilot:
                     "category": "任意控除制限" if is_ja else "Custom Deduction Ceiling",
                     "severity": "FLAG_REVIEW",
                     "rule_ref": "規程第11条 / 労基法第24条 (上限: 基本給20%)" if is_ja else "gyomu_itaku_kyuuyo_kitei.docx Article 11 & LSA Art. 24",
-                    "detail": f"控除額 ¥{custom_ded:,} は基本給の {pct_str} に達しており、規程上の上限20%（¥{threshold:,.0f}）を超過しています。" if is_ja else f"Deduction of ¥{custom_ded:,} equals {pct_str} of base salary, exceeding the 20% limit (¥{threshold:,.0f})."
+                    "detail": f"控除額 ¥{custom_ded:,.0f} は基本給の {pct_str} に達しており、規程上の上限20%（¥{threshold:,.0f}）を超過しています。" if is_ja else f"Deduction of ¥{custom_ded:,.0f} equals {pct_str} of base salary, exceeding the 20% limit (¥{threshold:,.0f})."
                 })
                 conflicts_detected.append({
                     "field": "custom_deduction",
@@ -470,7 +509,7 @@ class PolicyCopilot:
                 })
                 doc_citations.append(DOCX_POLICY_ARTICLES_JA["article_11"] if is_ja else DOCX_POLICY_ARTICLES_EN["article_11"])
 
-            reason = input_data.get("deduction_reason", "")
+            reason = str(input_data.get("deduction_reason") or "")
             if not reason:
                 findings.append({
                     "category": "控除理由メモ添付" if is_ja else "Deduction Documentation",
@@ -481,11 +520,22 @@ class PolicyCopilot:
                 conflicts_detected.append({
                     "field": "deduction_reason",
                     "article": "Article 11",
-                    "claimed": "理由未記入",
-                    "cap": "必須メモ",
+                    "claimed": "理由未記入" if is_ja else "No reason provided",
+                    "cap": "必須メモ" if is_ja else "Mandatory memo",
                     "difference": 0,
                     "type": "MISSING_DOCUMENTATION"
                 })
+                doc_citations.append(DOCX_POLICY_ARTICLES_JA["article_11"] if is_ja else DOCX_POLICY_ARTICLES_EN["article_11"])
+
+        # Deduplicate doc_citations preserving order
+        unique_citations: List[Dict[str, Any]] = []
+        seen_articles = set()
+        for citation in doc_citations:
+            art_id = citation.get("article_no") or citation.get("title")
+            if art_id not in seen_articles:
+                seen_articles.add(art_id)
+                unique_citations.append(citation)
+        doc_citations = unique_citations
 
         if status == "AUTO_APPROVED":
             recommendation = "本申請は「業務委託・給与控除等取扱い規程」および日本の税法・労働基準法に100%合致しています。自動ERPコミット可能です。" if is_ja else "Case complies 100% with gyomu_itaku_kyuuyo_kitei.docx and Japanese statutory tax laws. Safe for automated ERP commit."
@@ -604,7 +654,7 @@ class PolicyCopilot:
         is_audit_intent = any(k in q_lower for k in audit_intent_keywords)
 
         # 2. Check if user mentions a specific case ID or employee ID
-        case_match = re.search(r"(PI-[A-Z0-9\-]+|EMP-[0-9]+)", query, re.IGNORECASE)
+        case_match = re.search(r"((?:PI|AUTO|JP|CASE|EMP|E|TEST)-[A-Z0-9\-]+)", query, re.IGNORECASE)
 
         if case_match and active_cases:
             target_id = case_match.group(1).upper()
@@ -649,6 +699,29 @@ class PolicyCopilot:
                     "response_markdown": response_text,
                     "case_details": explanation,
                     "matches": [CORPORATE_POLICY_RULES["housing_subsidy"], CORPORATE_POLICY_RULES["commute_allowance"]],
+                    "policy_version": "2026.04-v1.2",
+                    "effective_date": "2026-04-01",
+                    "lang": effective_lang,
+                    "source_document": "gyomu_itaku_kyuuyo_kitei.docx"
+                }
+            else:
+                if is_ja:
+                    response_text = (
+                        f"### 【案件照会】`{target_id}` が見つかりませんでした\n\n"
+                        f"指定された案件IDまたは従業員ID (`{target_id}`) は現在ロードされている申請データの中に存在しません。\n"
+                        f"IDをご確認の上、再度お試しいただくか、「全件監査」と入力して全案件の規程照合を行ってください。"
+                    )
+                else:
+                    response_text = (
+                        f"### Case ID `{target_id}` Not Found\n\n"
+                        f"The requested Case or Employee ID (`{target_id}`) could not be located among active payment claims.\n"
+                        f"Please verify the ID format or request a full batch audit by asking to 'audit all payments'."
+                    )
+                return {
+                    "query": query,
+                    "response_markdown": response_text,
+                    "case_details": None,
+                    "matches": [],
                     "policy_version": "2026.04-v1.2",
                     "effective_date": "2026-04-01",
                     "lang": effective_lang,
@@ -775,11 +848,11 @@ class PolicyCopilot:
         is_ja = (lang == "ja")
         articles = list(DOCX_POLICY_ARTICLES_JA.values()) if is_ja else list(DOCX_POLICY_ARTICLES_EN.values())
         return {
-            "document_title": "業務委託・給与控除等取扱い規程 (Contractor & Payroll Deduction Handling Regulations)",
+            "document_title": "業務委託・給与控除等取扱い規程 (gyomu_itaku_kyuuyo_kitei.docx)" if is_ja else "Contractor & Payroll Deduction Handling Regulations (gyomu_itaku_kyuuyo_kitei.docx)",
             "filename": "gyomu_itaku_kyuuyo_kitei.docx",
             "version": "2026.04-v1.2",
             "lang": "ja" if is_ja else "en",
             "effective_date": "2026-04-01",
-            "approval_body": "Corporate HR Policy & Compliance Review Board",
+            "approval_body": "労務コンプライアンス委員会・人事統括部" if is_ja else "Corporate HR Policy & Compliance Review Board",
             "articles": articles
         }
